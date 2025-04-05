@@ -1,0 +1,3173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building an Open-Source Manus/Genspark Clone: Complete Project Report</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: #333;
+            line-height: 1.6;
+        }
+        .section {
+            margin-bottom: 2rem;
+        }
+        .code-block {
+            background-color: #f7fafc;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+            border: 1px solid #e2e8f0;
+        }
+        .architecture-diagram {
+            max-width: 100%;
+            margin: 2rem 0;
+        }
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #2d3748;
+        }
+        h2 {
+            font-size: 1.5rem;
+            color: #2d3748;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        h3 {
+            font-size: 1.25rem;
+            color: #4a5568;
+        }
+        h4 {
+            font-size: 1.125rem;
+            color: #4a5568;
+        }
+        p {
+            margin-bottom: 1rem;
+        }
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        .bg-highlight {
+            background-color: #ebf8ff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #4299e1;
+            margin: 1rem 0;
+        }
+        .bg-warning {
+            background-color: #fffaf0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #ed8936;
+            margin: 1rem 0;
+        }
+        .bg-success {
+            background-color: #f0fff4;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #48bb78;
+            margin: 1rem 0;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #f7fafc;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .tag-blue {
+            background-color: #ebf8ff;
+            color: #3182ce;
+        }
+        .tag-green {
+            background-color: #f0fff4;
+            color: #38a169;
+        }
+        .tag-orange {
+            background-color: #fffaf0;
+            color: #dd6b20;
+        }
+        .toc-section {
+            background-color: #f7fafc;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .toc-link {
+            display: block;
+            padding: 0.25rem 0;
+            color: #4a5568;
+            text-decoration: none;
+        }
+        .toc-link:hover {
+            color: #2b6cb0;
+        }
+        .toc-link-2 {
+            padding-left: 1rem;
+        }
+        .toc-link-3 {
+            padding-left: 2rem;
+        }
+    </style>
+</head>
+<body class="mx-auto max-w-5xl px-4 py-8">
+    <header class="mb-8">
+        <h1 class="text-4xl font-bold text-center mb-4">Building an Open-Source Manus/Genspark Clone</h1>
+        <p class="text-center text-gray-600 text-xl">A Complete Project Report for Cursor AI</p>
+    </header>
+
+    <div class="toc-section">
+        <h2 class="mb-4">Table of Contents</h2>
+        <a href="#introduction" class="toc-link">1. Introduction</a>
+        <a href="#overview" class="toc-link">2. System Overview</a>
+        <a href="#architecture" class="toc-link">3. System Architecture</a>
+        <a href="#architecture-components" class="toc-link toc-link-2">3.1 Core Components</a>
+        <a href="#architecture-diagram" class="toc-link toc-link-2">3.2 Architecture Diagram</a>
+        <a href="#frontend" class="toc-link">4. Frontend Implementation</a>
+        <a href="#frontend-tech" class="toc-link toc-link-2">4.1 Technology Stack</a>
+        <a href="#frontend-features" class="toc-link toc-link-2">4.2 Key Features</a>
+        <a href="#frontend-components" class="toc-link toc-link-2">4.3 UI Components</a>
+        <a href="#frontend-state" class="toc-link toc-link-2">4.4 State Management</a>
+        <a href="#backend" class="toc-link">5. Backend Implementation</a>
+        <a href="#backend-tech" class="toc-link toc-link-2">5.1 Technology Stack</a>
+        <a href="#backend-components" class="toc-link toc-link-2">5.2 Core Components</a>
+        <a href="#backend-agents" class="toc-link toc-link-2">5.3 Agent Architecture</a>
+        <a href="#backend-llm" class="toc-link toc-link-2">5.4 LLM Integration</a>
+        <a href="#database" class="toc-link">6. Database Design</a>
+        <a href="#database-schema" class="toc-link toc-link-2">6.1 Schema Design</a>
+        <a href="#database-vector" class="toc-link toc-link-2">6.2 Vector Database Integration</a>
+        <a href="#apis" class="toc-link">7. API Design</a>
+        <a href="#apis-core" class="toc-link toc-link-2">7.1 Core API Endpoints</a>
+        <a href="#apis-authentication" class="toc-link toc-link-2">7.2 Authentication</a>
+        <a href="#apis-external" class="toc-link toc-link-2">7.3 External API Integration</a>
+        <a href="#implementation" class="toc-link">8. Implementation Steps</a>
+        <a href="#deployment" class="toc-link">9. Deployment Guide</a>
+        <a href="#integrations" class="toc-link">10. External Integrations</a>
+        <a href="#testing" class="toc-link">11. Testing Strategy</a>
+        <a href="#extension" class="toc-link">12. Extensibility and Customization</a>
+        <a href="#troubleshooting" class="toc-link">13. Troubleshooting</a>
+        <a href="#future" class="toc-link">14. Future Enhancements</a>
+        <a href="#conclusion" class="toc-link">15. Conclusion</a>
+    </div>
+
+    <section id="introduction" class="section">
+        <h2>1. Introduction</h2>
+        <p>Manus and Genspark are advanced AI agent platforms that can autonomously perform complex tasks by thinking, planning, and taking action. Unlike simple chatbots, these agents are designed to understand complex instructions, break them down into subtasks, and execute them independently using various tools and APIs.</p>
+        
+        <p>This project report provides a comprehensive roadmap for building an open-source alternative to Manus/Genspark that can run locally on your machine using your own API keys. By following this guide, you'll be able to create a powerful AI agent platform with capabilities similar to these commercial offerings but with full control over your data and infrastructure.</p>
+        
+        <div class="bg-highlight">
+            <h4>Key Features We'll Implement:</h4>
+            <ul>
+                <li><strong>Multi-agent Architecture</strong>: Coordinated AI agents working together</li>
+                <li><strong>Tool Use Capabilities</strong>: Integration with external tools and APIs</li>
+                <li><strong>Task Planning & Execution</strong>: Autonomous breakdown and execution of complex tasks</li>
+                <li><strong>Browser Automation</strong>: Ability to interact with web interfaces</li>
+                <li><strong>Code Execution</strong>: Ability to write and run code</li>
+                <li><strong>Modern Web Interface</strong>: User-friendly UI for interacting with agents</li>
+                <li><strong>Local Deployment</strong>: Run entirely on your own infrastructure</li>
+                <li><strong>API Key Management</strong>: Securely store and manage your API keys</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="overview" class="section">
+        <h2>2. System Overview</h2>
+        <p>Our Manus/Genspark clone (which we'll call "OpenAgent" for this report) is a comprehensive AI agent platform that leverages large language models (LLMs) to create autonomous agents capable of performing complex tasks. The system consists of several key components:</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h3 class="text-blue-800 mb-2"><i class="fas fa-brain mr-2"></i>Agent Framework</h3>
+                <p>Core architecture for autonomous agents with planning and execution capabilities, built on existing open-source frameworks like OWL, CrewAI, or LangGraph.</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h3 class="text-green-800 mb-2"><i class="fas fa-tools mr-2"></i>Tool Integration System</h3>
+                <p>Extensible framework for integrating various tools and APIs that agents can use to interact with the outside world, including web browsing, code execution, and data analysis.</p>
+            </div>
+            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <h3 class="text-yellow-800 mb-2"><i class="fas fa-desktop mr-2"></i>Modern Web Interface</h3>
+                <p>React-based frontend that provides intuitive interaction with agents, real-time feedback, and visualization of agent activities.</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h3 class="text-purple-800 mb-2"><i class="fas fa-server mr-2"></i>Backend API Services</h3>
+                <p>FastAPI-based backend that handles agent orchestration, tool management, authentication, and integration with LLM providers.</p>
+            </div>
+        </div>
+
+        <p>OpenAgent is designed to be modular and extensible, allowing for easy addition of new capabilities, tools, and integrations. This architecture enables the system to grow with your needs and adapt to new advancements in AI technology.</p>
+    </section>
+
+    <section id="architecture" class="section">
+        <h2>3. System Architecture</h2>
+        <p>The architecture of our Manus/Genspark clone follows a modern, modular design that separates concerns between different components while enabling seamless communication between them.</p>
+
+        <section id="architecture-components">
+            <h3>3.1 Core Components</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Description</th>
+                            <th>Technologies</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Frontend Application</td>
+                            <td>User interface for interacting with AI agents, visualizing their activities, and managing settings</td>
+                            <td>React, TypeScript, TailwindCSS, Redux</td>
+                        </tr>
+                        <tr>
+                            <td>Backend API Server</td>
+                            <td>Handles HTTP requests, manages authentication, orchestrates agents, and provides API endpoints</td>
+                            <td>FastAPI, Python, JWT Authentication</td>
+                        </tr>
+                        <tr>
+                            <td>Agent Orchestrator</td>
+                            <td>Coordinates multi-agent activities, handles task planning and delegation</td>
+                            <td>OWL Framework (CAMEL-based), Python</td>
+                        </tr>
+                        <tr>
+                            <td>Tool Integration Framework</td>
+                            <td>Manages available tools, their permissions, and execution environment</td>
+                            <td>Python, Docker (optional for isolation)</td>
+                        </tr>
+                        <tr>
+                            <td>Browser Automation</td>
+                            <td>Enables agents to interact with web pages</td>
+                            <td>Playwright, Python</td>
+                        </tr>
+                        <tr>
+                            <td>Database</td>
+                            <td>Stores user data, conversation history, agent configurations</td>
+                            <td>PostgreSQL, SQLAlchemy</td>
+                        </tr>
+                        <tr>
+                            <td>Vector Database</td>
+                            <td>Stores embeddings for semantic search and retrieval</td>
+                            <td>ChromaDB, FAISS</td>
+                        </tr>
+                        <tr>
+                            <td>LLM Integration</td>
+                            <td>Connects to various LLM providers</td>
+                            <td>OpenAI API, Claude API, Local models via LMStudio</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="architecture-diagram">
+            <h3>3.2 Architecture Diagram</h3>
+            <p>Here's a high-level representation of our system architecture:</p>
+            
+            <div class="code-block">
+<pre>
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            Client Browser                                │
+└───────────────────────────────────┬─────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          React Frontend (SPA)                            │
+│                                                                         │
+│  ┌───────────────┐   ┌───────────────┐   ┌───────────────────────────┐  │
+│  │ Chat Interface│   │ Agent Monitor │   │ Settings & Configuration  │  │
+│  └───────────────┘   └───────────────┘   └───────────────────────────┘  │
+│                                                                         │
+└───────────────────────────────────┬─────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          FastAPI Backend Server                          │
+│                                                                         │
+│  ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────────┐    │
+│  │ Authentication  │   │ User Management │   │ Conversation API    │    │
+│  └─────────────────┘   └─────────────────┘   └─────────────────────┘    │
+│                                                                         │
+│  ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────────┐    │
+│  │ Agent API       │   │ Tool Management │   │ External API Gateway│    │
+│  └─────────────────┘   └─────────────────┘   └─────────────────────┘    │
+│                                                                         │
+└───────────────────────────────────┬─────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Agent Orchestration Layer                        │
+│                                                                         │
+│  ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────────┐    │
+│  │ Task Planning   │   │ Agent Execution │   │ Multi-Agent         │    │
+│  │ Agent           │   │ Engine          │   │ Coordination        │    │
+│  └─────────────────┘   └─────────────────┘   └─────────────────────┘    │
+│                                                                         │
+└───────────────────────────────────┬─────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                              Tool Layer                                 │
+│                                                                        │
+│  ┌──────────────┐ ┌───────────────┐ ┌────────────────┐ ┌────────────┐  │
+│  │ Web Browser  │ │ Code Execution│ │ Data Processing│ │ API Access │  │
+│  │ (Playwright) │ │ (Python)      │ │ (Pandas, etc.) │ │ Toolkit    │  │
+│  └──────────────┘ └───────────────┘ └────────────────┘ └────────────┘  │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
+          │                  │                 │               │
+          ▼                  ▼                 ▼               ▼
+┌──────────────┐    ┌─────────────┐   ┌─────────────┐  ┌─────────────────┐
+│ Web Services │    │ Local       │   │ Databases   │  │ External APIs   │
+│              │    │ Filesystem  │   │             │  │                 │
+└──────────────┘    └─────────────┘   └─────────────┘  └─────────────────┘
+</pre>
+            </div>
+
+            <h4>Communication Flow</h4>
+            <ol>
+                <li><strong>User Interaction</strong>: User interacts with the React frontend to provide instructions or tasks to the AI agents.</li>
+                <li><strong>API Communication</strong>: The frontend communicates with the FastAPI backend via RESTful API calls.</li>
+                <li><strong>Agent Orchestration</strong>: The backend passes instructions to the Agent Orchestration layer which plans and distributes tasks among agents.</li>
+                <li><strong>Tool Utilization</strong>: Agents utilize various tools as needed to accomplish tasks (browsing, code execution, data analysis, etc.).</li>
+                <li><strong>Result Reporting</strong>: Results and progress are reported back to the frontend for display to the user.</li>
+            </ol>
+
+            <div class="bg-highlight">
+                <h4>Benefits of This Architecture:</h4>
+                <ul>
+                    <li><strong>Modularity</strong>: Components can be developed, tested, and upgraded independently</li>
+                    <li><strong>Scalability</strong>: Each component can scale horizontally as needed</li>
+                    <li><strong>Flexibility</strong>: Easy to swap in different implementations (e.g., different LLM providers)</li>
+                    <li><strong>Security</strong>: Clear separation between user interface, business logic, and tool execution</li>
+                </ul>
+            </div>
+        </section>
+    </section>
+
+    <section id="frontend" class="section">
+        <h2>4. Frontend Implementation</h2>
+        <p>The frontend of our Manus/Genspark clone provides an intuitive interface for users to interact with AI agents, view their activities, and manage settings.</p>
+
+        <section id="frontend-tech">
+            <h3>4.1 Technology Stack</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h4 class="text-blue-800 mb-2">Core Framework</h4>
+                    <ul class="list-disc pl-5">
+                        <li>React 18+</li>
+                        <li>TypeScript</li>
+                        <li>Vite (build tool)</li>
+                    </ul>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h4 class="text-blue-800 mb-2">UI Components</h4>
+                    <ul class="list-disc pl-5">
+                        <li>TailwindCSS</li>
+                        <li>HeadlessUI</li>
+                        <li>React Icons</li>
+                    </ul>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h4 class="text-blue-800 mb-2">State Management</h4>
+                    <ul class="list-disc pl-5">
+                        <li>Redux Toolkit</li>
+                        <li>React Query</li>
+                        <li>Zustand (optional)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p>We'll also leverage these specialized libraries for AI chat UI functionality:</p>
+            <ul>
+                <li><strong>@nlux/react</strong>: Specialized React components for building conversational AI interfaces</li>
+                <li><strong>assistant-ui</strong>: Typescript/React library specifically for AI chat with features like auto-scrolling and accessibility</li>
+                <li><strong>CopilotKit</strong>: React UI components designed for AI integration</li>
+                <li><strong>react-markdown</strong>: For rendering markdown content from AI responses</li>
+                <li><strong>highlight.js</strong>: For syntax highlighting in code blocks</li>
+            </ul>
+        </section>
+
+        <section id="frontend-features">
+            <h3>4.2 Key Features</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Description</th>
+                            <th>Implementation Approach</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Chat Interface</td>
+                            <td>Primary interaction channel with AI agents, supporting markdown, code blocks, and file uploads</td>
+                            <td>Custom chat components with @nlux/react and react-markdown</td>
+                        </tr>
+                        <tr>
+                            <td>Real-time Agent Status</td>
+                            <td>Live updates on agent activities, thought processes, and progress</td>
+                            <td>WebSocket connection for streaming updates</td>
+                        </tr>
+                        <tr>
+                            <td>Agent Visualization</td>
+                            <td>Visual representation of multi-agent system and their interactions</td>
+                            <td>Custom visualization using React Flow or D3.js</td>
+                        </tr>
+                        <tr>
+                            <td>File Management</td>
+                            <td>Upload, view, and manage files used by AI agents</td>
+                            <td>Custom file manager component with drag-and-drop support</td>
+                        </tr>
+                        <tr>
+                            <td>Settings Panel</td>
+                            <td>Configure agent behavior, API keys, and system preferences</td>
+                            <td>Forms with validation using Formik or React Hook Form</td>
+                        </tr>
+                        <tr>
+                            <td>Tool Integration UI</td>
+                            <td>Interface for viewing and managing tools available to agents</td>
+                            <td>Custom dashboard with toggle controls</td>
+                        </tr>
+                        <tr>
+                            <td>Browser Preview</td>
+                            <td>View browser activities when agents use web browsing capabilities</td>
+                            <td>Iframe or screenshot-based preview</td>
+                        </tr>
+                        <tr>
+                            <td>Conversation History</td>
+                            <td>Browse and retrieve past conversations</td>
+                            <td>Searchable history list with filtering options</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="frontend-components">
+            <h3>4.3 UI Components</h3>
+            <p>Here's an overview of the key UI components we'll implement:</p>
+
+            <div class="code-block">
+<pre>
+src/
+├── components/
+│   ├── layout/
+│   │   ├── Sidebar.tsx           # Main navigation sidebar
+│   │   ├── Header.tsx            # Application header
+│   │   └── MainLayout.tsx        # Main application layout
+│   ├── chat/
+│   │   ├── ChatContainer.tsx     # Main chat interface container
+│   │   ├── MessageList.tsx       # List of chat messages
+│   │   ├── MessageItem.tsx       # Individual message component
+│   │   ├── InputBox.tsx          # Message input with attachments
+│   │   └── TypingIndicator.tsx   # Agent typing indicator
+│   ├── agents/
+│   │   ├── AgentCard.tsx         # Card displaying agent info
+│   │   ├── AgentStatus.tsx       # Agent status indicator
+│   │   ├── AgentThought.tsx      # Display agent thought process
+│   │   └── AgentNetwork.tsx      # Visualization of agent network
+│   ├── tools/
+│   │   ├── ToolList.tsx          # List of available tools
+│   │   ├── ToolCard.tsx          # Individual tool display
+│   │   └── ToolExecution.tsx     # Tool execution display
+│   ├── files/
+│   │   ├── FileUploader.tsx      # File upload component
+│   │   ├── FileList.tsx          # List of uploaded files
+│   │   └── FileViewer.tsx        # File content viewer
+│   ├── settings/
+│   │   ├── ApiKeyManager.tsx     # Manage API keys securely
+│   │   ├── PreferencesPanel.tsx  # User preferences
+│   │   └── ModelSettings.tsx     # LLM model settings
+│   └── common/
+│       ├── Button.tsx            # Reusable button component
+│       ├── Modal.tsx             # Modal dialog component
+│       ├── LoadingSpinner.tsx    # Loading indicator
+│       └── Tooltip.tsx           # Tooltip component
+├── pages/
+│   ├── Dashboard.tsx             # Main dashboard page
+│   ├── Chat.tsx                  # Chat interface page
+│   ├── Settings.tsx              # Settings page
+│   ├── History.tsx               # Conversation history page
+│   └── Tools.tsx                 # Tool management page
+└── ...
+</pre>
+            </div>
+
+            <h4>Sample Chat Interface Implementation</h4>
+            <div class="code-block">
+<pre>
+// src/components/chat/ChatContainer.tsx
+import React, { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { MessageList } from './MessageList';
+import { InputBox } from './InputBox';
+import { AgentStatus } from '../agents/AgentStatus';
+import { sendMessage, stopExecution } from '../../store/chatSlice';
+
+export const ChatContainer: React.FC = () => {
+  const dispatch = useDispatch();
+  const chatRef = useRef<HTMLDivElement>(null);
+  const { messages, isProcessing, currentTask } = useSelector((state) => state.chat);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSendMessage = (content: string, attachments: File[] = []) => {
+    dispatch(sendMessage({ content, attachments }));
+  };
+
+  const handleStopExecution = () => {
+    dispatch(stopExecution());
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="p-4 border-b">
+        <AgentStatus isProcessing={isProcessing} currentTask={currentTask} />
+      </div>
+      
+      <div className="flex-1 overflow-y-auto p-4" ref={chatRef}>
+        <MessageList messages={messages} />
+      </div>
+      
+      <div className="p-4 border-t">
+        <InputBox 
+          onSendMessage={handleSendMessage} 
+          isDisabled={isProcessing}
+          onStopExecution={handleStopExecution}
+        />
+      </div>
+    </div>
+  );
+};
+</pre>
+            </div>
+        </section>
+
+        <section id="frontend-state">
+            <h3>4.4 State Management</h3>
+            <p>We'll use Redux Toolkit for global state management, focusing on these key slices:</p>
+
+            <div class="code-block">
+<pre>
+// src/store/index.ts
+import { configureStore } from '@reduxjs/toolkit';
+import chatReducer from './chatSlice';
+import agentsReducer from './agentsSlice';
+import toolsReducer from './toolsSlice';
+import settingsReducer from './settingsSlice';
+import filesReducer from './filesSlice';
+
+export const store = configureStore({
+  reducer: {
+    chat: chatReducer,
+    agents: agentsReducer,
+    tools: toolsReducer,
+    settings: settingsReducer,
+    files: filesReducer,
+  },
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+</pre>
+            </div>
+
+            <p>Example of a slice implementation:</p>
+
+            <div class="code-block">
+<pre>
+// src/store/chatSlice.ts
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { api } from '../services/api';
+import { Message } from '../types';
+
+interface ChatState {
+  messages: Message[];
+  isProcessing: boolean;
+  currentTask: string | null;
+  error: string | null;
+}
+
+const initialState: ChatState = {
+  messages: [],
+  isProcessing: false,
+  currentTask: null,
+  error: null,
+};
+
+export const sendMessage = createAsyncThunk(
+  'chat/sendMessage',
+  async ({ content, attachments }: { content: string, attachments?: File[] }, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append('content', content);
+      
+      if (attachments) {
+        attachments.forEach((file, index) => {
+          formData.append(`file${index}`, file);
+        });
+      }
+      
+      const response = await api.post('/conversations/message', formData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to send message');
+    }
+  }
+);
+
+export const stopExecution = createAsyncThunk(
+  'chat/stopExecution',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/conversations/stop');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to stop execution');
+    }
+  }
+);
+
+const chatSlice = createSlice({
+  name: 'chat',
+  initialState,
+  reducers: {
+    addMessage: (state, action) => {
+      state.messages.push(action.payload);
+    },
+    updateAgentStatus: (state, action) => {
+      state.currentTask = action.payload;
+    },
+    clearChat: (state) => {
+      state.messages = [];
+      state.currentTask = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(sendMessage.pending, (state) => {
+        state.isProcessing = true;
+        state.error = null;
+        state.messages.push({
+          id: Date.now().toString(),
+          role: 'user',
+          content,
+          timestamp: new Date().toISOString(),
+        });
+      })
+      .addCase(sendMessage.fulfilled, (state, action) => {
+        state.isProcessing = false;
+        // Response will be handled by WebSocket updates to avoid duplicates
+      })
+      .addCase(sendMessage.rejected, (state, action) => {
+        state.isProcessing = false;
+        state.error = action.payload as string;
+      })
+      .addCase(stopExecution.fulfilled, (state) => {
+        state.isProcessing = false;
+        state.currentTask = null;
+      });
+  },
+});
+
+export const { addMessage, updateAgentStatus, clearChat } = chatSlice.actions;
+export default chatSlice.reducer;
+</pre>
+            </div>
+
+            <p>For WebSocket connections to receive real-time updates from agents, we'll implement a custom hook:</p>
+
+            <div class="code-block">
+<pre>
+// src/hooks/useAgentWebSocket.ts
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { addMessage, updateAgentStatus } from '../store/chatSlice';
+import { updateAgentState } from '../store/agentsSlice';
+
+export const useAgentWebSocket = (conversationId: string) => {
+  const dispatch = useDispatch();
+  
+  useEffect(() => {
+    const wsUrl = `${process.env.REACT_APP_WS_URL}/conversations/${conversationId}/updates`;
+    const socket = new WebSocket(wsUrl);
+    
+    socket.onopen = () => {
+      console.log('WebSocket connection established');
+    };
+    
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      
+      switch (data.type) {
+        case 'message':
+          dispatch(addMessage(data.message));
+          break;
+        case 'agent_status':
+          dispatch(updateAgentStatus(data.task));
+          break;
+        case 'agent_state':
+          dispatch(updateAgentState(data.agent));
+          break;
+        default:
+          console.log('Unknown message type:', data.type);
+      }
+    };
+    
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+    
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+    
+    return () => {
+      socket.close();
+    };
+  }, [conversationId, dispatch]);
+};
+</pre>
+            </div>
+        </section>
+    </section>
+
+    <section id="backend" class="section">
+        <h2>5. Backend Implementation</h2>
+        <p>The backend of our Manus/Genspark clone provides the core functionality for agent orchestration, tool integration, and API services.</p>
+
+        <section id="backend-tech">
+            <h3>5.1 Technology Stack</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h4 class="text-green-800 mb-2">Core Framework</h4>
+                    <ul class="list-disc pl-5">
+                        <li>Python 3.10+</li>
+                        <li>FastAPI</li>
+                        <li>Pydantic</li>
+                    </ul>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h4 class="text-green-800 mb-2">Database & ORM</h4>
+                    <ul class="list-disc pl-5">
+                        <li>PostgreSQL</li>
+                        <li>SQLAlchemy</li>
+                        <li>Alembic (migrations)</li>
+                    </ul>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h4 class="text-green-800 mb-2">Authentication</h4>
+                    <ul class="list-disc pl-5">
+                        <li>JWT</li>
+                        <li>Bcrypt</li>
+                        <li>OAuth2 (optional)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p>For the agent and tool integration, we'll use:</p>
+            <ul>
+                <li><strong>OWL</strong>: Open-source multi-agent framework built on CAMEL-AI</li>
+                <li><strong>LangChain</strong>: Framework for LLM application development (as needed)</li>
+                <li><strong>Playwright</strong>: Browser automation library</li>
+                <li><strong>ChromaDB</strong>: Vector database for semantic search</li>
+                <li><strong>Pydantic</strong>: Data validation and settings management</li>
+                <li><strong>Websockets</strong>: For real-time communication with the frontend</li>
+                <li><strong>Celery</strong>: Task queue for long-running operations (optional)</li>
+            </ul>
+        </section>
+
+        <section id="backend-components">
+            <h3>5.2 Core Components</h3>
+            <p>Here's an overview of the core backend components:</p>
+
+            <div class="code-block">
+<pre>
+app/
+├── main.py                    # FastAPI application entry point
+├── config.py                  # Application configuration
+├── database.py                # Database connection and session management
+├── dependencies.py            # FastAPI dependencies
+├── security.py                # Authentication and authorization
+├── api/                       # API endpoints
+│   ├── __init__.py
+│   ├── router.py              # Main API router
+│   ├── auth.py                # Authentication endpoints
+│   ├── conversations.py       # Conversation management
+│   ├── agents.py              # Agent management
+│   ├── tools.py               # Tool management
+│   ├── files.py               # File upload and management
+│   └── settings.py            # User settings
+├── models/                    # SQLAlchemy models
+│   ├── __init__.py
+│   ├── user.py                # User model
+│   ├── conversation.py        # Conversation model
+│   ├── message.py             # Message model
+│   ├── tool.py                # Tool model
+│   └── file.py                # File model
+├── schemas/                   # Pydantic schemas
+│   ├── __init__.py
+│   ├── user.py                # User schemas
+│   ├── conversation.py        # Conversation schemas
+│   ├── message.py             # Message schemas
+│   ├── tool.py                # Tool schemas
+│   └── file.py                # File schemas
+├── agents/                    # Agent implementation
+│   ├── __init__.py
+│   ├── base.py                # Base agent class
+│   ├── orchestrator.py        # Agent orchestration
+│   ├── planner.py             # Task planning agent
+│   ├── executor.py            # Task execution agent
+│   └── society.py             # Multi-agent society
+├── tools/                     # Tool implementation
+│   ├── __init__.py
+│   ├── registry.py            # Tool registry
+│   ├── browser.py             # Browser automation
+│   ├── code_execution.py      # Code execution
+│   ├── search.py              # Web search capabilities
+│   ├── document.py            # Document processing
+│   └── data_analysis.py       # Data analysis capabilities
+├── services/                  # Business logic services
+│   ├── __init__.py
+│   ├── conversation.py        # Conversation service
+│   ├── llm.py                 # LLM service
+│   ├── embeddings.py          # Embedding service
+│   └── file_storage.py        # File storage service
+└── utils/                     # Utility functions
+    ├── __init__.py
+    ├── logger.py              # Logging utilities
+    ├── security.py            # Security utilities
+    └── helpers.py             # Helper functions
+</pre>
+            </div>
+
+            <h4>FastAPI Application Entry Point</h4>
+
+            <div class="code-block">
+<pre>
+# app/main.py
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
+from app.api.router import api_router
+from app.config import settings
+from app.database import create_db_and_tables
+
+app = FastAPI(
+    title="OpenAgent API",
+    description="API for OpenAgent - An open source Manus/Genspark clone",
+    version="0.1.0",
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include API router
+app.include_router(api_router, prefix="/api")
+
+# Mount static files for uploaded content
+app.mount("/files", StaticFiles(directory=settings.UPLOAD_DIR), name="files")
+
+@app.on_event("startup")
+async def startup_event():
+    # Create database tables if they don't exist
+    create_db_and_tables()
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+</pre>
+            </div>
+
+            <h4>API Router Configuration</h4>
+
+            <div class="code-block">
+<pre>
+# app/api/router.py
+from fastapi import APIRouter
+
+from app.api import auth, conversations, agents, tools, files, settings
+
+api_router = APIRouter()
+
+api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
+api_router.include_router(conversations.router, prefix="/conversations", tags=["conversations"])
+api_router.include_router(agents.router, prefix="/agents", tags=["agents"])
+api_router.include_router(tools.router, prefix="/tools", tags=["tools"])
+api_router.include_router(files.router, prefix="/files", tags=["files"])
+api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
+</pre>
+            </div>
+
+            <h4>Conversation Endpoints Example</h4>
+
+            <div class="code-block">
+<pre>
+# app/api/conversations.py
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, WebSocket, WebSocketDisconnect
+from sqlalchemy.orm import Session
+
+from app.dependencies import get_db, get_current_user
+from app.models.user import User
+from app.schemas.conversation import ConversationCreate, ConversationResponse, MessageCreate, MessageResponse
+from app.services.conversation import ConversationService
+from app.agents.orchestrator import AgentOrchestrator
+
+router = APIRouter()
+
+@router.post("/", response_model=ConversationResponse)
+def create_conversation(
+    conversation: ConversationCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new conversation"""
+    conversation_service = ConversationService(db)
+    db_conversation = conversation_service.create_conversation(
+        user_id=current_user.id,
+        title=conversation.title,
+        description=conversation.description
+    )
+    return db_conversation
+
+@router.get("/", response_model=List[ConversationResponse])
+def list_conversations(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """List all conversations for the current user"""
+    conversation_service = ConversationService(db)
+    conversations = conversation_service.get_user_conversations(
+        user_id=current_user.id,
+        skip=skip,
+        limit=limit
+    )
+    return conversations
+
+@router.post("/{conversation_id}/message", response_model=MessageResponse)
+async def send_message(
+    conversation_id: int,
+    content: str,
+    files: List[UploadFile] = File(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Send a message to a conversation"""
+    conversation_service = ConversationService(db)
+    
+    # Verify conversation belongs to user
+    conversation = conversation_service.get_conversation(conversation_id)
+    if not conversation or conversation.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Save uploaded files if any
+    file_paths = []
+    if files:
+        file_service = FileService()
+        for file in files:
+            file_path = await file_service.save_file(file, current_user.id)
+            file_paths.append(file_path)
+    
+    # Create user message
+    message = conversation_service.create_message(
+        conversation_id=conversation_id,
+        role="user",
+        content=content,
+        files=file_paths
+    )
+    
+    # Start agent task processing (async)
+    orchestrator = AgentOrchestrator()
+    orchestrator.process_message_async(
+        conversation_id=conversation_id,
+        message_id=message.id,
+        user_id=current_user.id
+    )
+    
+    return message
+
+@router.post("/{conversation_id}/stop")
+async def stop_execution(
+    conversation_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Stop current agent execution for a conversation"""
+    conversation_service = ConversationService(db)
+    
+    # Verify conversation belongs to user
+    conversation = conversation_service.get_conversation(conversation_id)
+    if not conversation or conversation.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    orchestrator = AgentOrchestrator()
+    orchestrator.stop_execution(conversation_id)
+    
+    return {"status": "success", "message": "Execution stopped"}
+
+@router.websocket("/{conversation_id}/updates")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    conversation_id: int,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    """WebSocket endpoint for real-time updates"""
+    # Authenticate user
+    try:
+        user = await get_user_from_token(token, db)
+    except:
+        await websocket.close(code=4001)  # Authentication failed
+        return
+    
+    # Verify conversation belongs to user
+    conversation_service = ConversationService(db)
+    conversation = conversation_service.get_conversation(conversation_id)
+    if not conversation or conversation.user_id != user.id:
+        await websocket.close(code=4004)  # Not found
+        return
+    
+    await websocket.accept()
+    
+    try:
+        # Register client to receive updates
+        orchestrator = AgentOrchestrator()
+        await orchestrator.register_client(conversation_id, websocket)
+        
+        # Keep connection alive, handling client messages if needed
+        while True:
+            data = await websocket.receive_text()
+            # Handle client commands if needed
+    except WebSocketDisconnect:
+        # Remove client on disconnect
+        orchestrator = AgentOrchestrator()
+        orchestrator.remove_client(conversation_id, websocket)
+</pre>
+            </div>
+        </section>
+
+        <section id="backend-agents">
+            <h3>5.3 Agent Architecture</h3>
+            <p>We'll implement a multi-agent architecture based on the OWL framework with some customizations for our specific needs.</p>
+
+            <h4>Agent Orchestrator</h4>
+
+            <div class="code-block">
+<pre>
+# app/agents/orchestrator.py
+import asyncio
+from typing import Dict, List, Optional
+from fastapi import WebSocket
+
+from app.agents.society import construct_society
+from app.services.conversation import ConversationService
+from app.config import settings
+
+class AgentOrchestrator:
+    _instance = None
+    _active_tasks: Dict[int, asyncio.Task] = {}
+    _clients: Dict[int, List[WebSocket]] = {}
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(AgentOrchestrator, cls).__new__(cls)
+            cls._instance._initialize()
+        return cls._instance
+    
+    def _initialize(self):
+        """Initialize the orchestrator"""
+        self._active_tasks = {}
+        self._clients = {}
+    
+    def process_message_async(self, conversation_id: int, message_id: int, user_id: int):
+        """Start asynchronous processing of a message"""
+        # Cancel any existing task for this conversation
+        if conversation_id in self._active_tasks and not self._active_tasks[conversation_id].done():
+            self._active_tasks[conversation_id].cancel()
+        
+        # Create new task
+        loop = asyncio.get_event_loop()
+        task = loop.create_task(self._process_message(conversation_id, message_id, user_id))
+        self._active_tasks[conversation_id] = task
+        
+        # Setup callback for when task completes
+        task.add_done_callback(lambda t: self._handle_task_completion(t, conversation_id))
+    
+    async def _process_message(self, conversation_id: int, message_id: int, user_id: int):
+        """Process a message with AI agents"""
+        try:
+            # Get conversation service
+            db = next(get_db())
+            conversation_service = ConversationService(db)
+            
+            # Get the message content
+            message = conversation_service.get_message(message_id)
+            if not message:
+                await self._broadcast_error(conversation_id, "Message not found")
+                return
+            
+            # Get conversation history
+            history = conversation_service.get_conversation_messages(conversation_id)
+            
+            # Broadcast that processing has started
+            await self._broadcast_status(conversation_id, {
+                "type": "agent_status",
+                "status": "processing",
+                "task": "Analyzing your request"
+            })
+            
+            # Construct agent society
+            society = construct_society(
+                message.content,
+                history=[m.content for m in history],
+                user_id=user_id
+            )
+            
+            # Run society to get answer
+            async for update in society.arun_with_updates():
+                # Broadcast update to all clients
+                await self._broadcast_update(conversation_id, update)
+            
+            # Get final answer
+            answer, chat_history, token_count = society.get_result()
+            
+            # Save agent response to database
+            conversation_service.create_message(
+                conversation_id=conversation_id,
+                role="assistant",
+                content=answer
+            )
+            
+            # Broadcast completion
+            await self._broadcast_status(conversation_id, {
+                "type": "agent_status",
+                "status": "completed",
+                "task": None
+            })
+            
+        except asyncio.CancelledError:
+            # Task was cancelled
+            await self._broadcast_status(conversation_id, {
+                "type": "agent_status",
+                "status": "cancelled",
+                "task": None
+            })
+            
+        except Exception as e:
+            # Handle errors
+            error_message = f"Error processing request: {str(e)}"
+            await self._broadcast_error(conversation_id, error_message)
+            
+            # Save error message to database
+            conversation_service.create_message(
+                conversation_id=conversation_id,
+                role="system",
+                content=f"Error: {error_message}"
+            )
+    
+    def _handle_task_completion(self, task, conversation_id: int):
+        """Handle task completion (cleanup)"""
+        if conversation_id in self._active_tasks:
+            # Check for exceptions (but don't handle them here)
+            try:
+                task.result()
+            except (asyncio.CancelledError, Exception):
+                pass
+            
+            # Remove from active tasks
+            del self._active_tasks[conversation_id]
+    
+    def stop_execution(self, conversation_id: int):
+        """Stop execution for a conversation"""
+        if conversation_id in self._active_tasks and not self._active_tasks[conversation_id].done():
+            self._active_tasks[conversation_id].cancel()
+            return True
+        return False
+    
+    async def register_client(self, conversation_id: int, websocket: WebSocket):
+        """Register a client to receive updates for a conversation"""
+        if conversation_id not in self._clients:
+            self._clients[conversation_id] = []
+        self._clients[conversation_id].append(websocket)
+    
+    def remove_client(self, conversation_id: int, websocket: WebSocket):
+        """Remove a client from updates"""
+        if conversation_id in self._clients and websocket in self._clients[conversation_id]:
+            self._clients[conversation_id].remove(websocket)
+            if not self._clients[conversation_id]:
+                del self._clients[conversation_id]
+    
+    async def _broadcast_update(self, conversation_id: int, update: dict):
+        """Broadcast an update to all clients for a conversation"""
+        if conversation_id in self._clients:
+            for websocket in self._clients[conversation_id]:
+                try:
+                    await websocket.send_json(update)
+                except:
+                    # Client disconnected
+                    await self.remove_client(conversation_id, websocket)
+    
+    async def _broadcast_status(self, conversation_id: int, status: dict):
+        """Broadcast a status update to all clients for a conversation"""
+        await self._broadcast_update(conversation_id, status)
+    
+    async def _broadcast_error(self, conversation_id: int, error: str):
+        """Broadcast an error to all clients for a conversation"""
+        await self._broadcast_update(conversation_id, {
+            "type": "error",
+            "message": error
+        })
+</pre>
+            </div>
+
+            <h4>Multi-Agent Society Implementation Using OWL</h4>
+
+            <div class="code-block">
+<pre>
+# app/agents/society.py
+from typing import List, Dict, Tuple, AsyncGenerator
+import asyncio
+from camel.agents import ChatAgent
+from camel.societies import RolePlaying
+from camel.types import Message
+
+from app.tools.registry import get_tools
+from app.services.llm import get_llm_model
+from app.config import settings
+
+def construct_society(query: str, history: List[str] = None, user_id: int = None) -> "AgentSociety":
+    """
+    Construct an agent society for processing a user query
+    
+    Args:
+        query: The user query/instruction
+        history: Optional conversation history
+        user_id: User ID for personalization
+        
+    Returns:
+        An AgentSociety instance ready to process the query
+    """
+    # Get the LLM models we'll use
+    models = {
+        "assistant": get_llm_model(settings.ASSISTANT_MODEL),
+        "executor": get_llm_model(settings.EXECUTOR_MODEL),
+        "planner": get_llm_model(settings.PLANNER_MODEL),
+        "tool": get_llm_model(settings.TOOL_MODEL),
+    }
+    
+    # Configure tools
+    tools = get_tools(user_id)
+    
+    # Create the agent society
+    society = AgentSociety(
+        query=query,
+        history=history,
+        tools=tools,
+        models=models
+    )
+    
+    return society
+
+class AgentSociety:
+    """A society of agents that work together to solve a task"""
+    
+    def __init__(
+        self, 
+        query: str, 
+        history: List[str] = None, 
+        tools: List = None,
+        models: Dict = None
+    ):
+        self.query = query
+        self.history = history or []
+        self.tools = tools or []
+        self.models = models or {}
+        self.result = None
+        self.chat_history = []
+        self.token_count = 0
+        
+        # Initialize OWL components
+        self._init_owl_society()
+    
+    def _init_owl_society(self):
+        """Initialize OWL society components"""
+        # Configure assistant agent
+        assistant_agent_kwargs = {
+            "model": self.models.get("assistant"),
+            "tools": self.tools
+        }
+        
+        # Initialize OWL society
+        from camel.societies import construct_society, run_society
+        self.owl_society = construct_society(self.query)
+    
+    def run(self) -> Tuple[str, List, int]:
+        """
+        Run the agent society synchronously
+        
+        Returns:
+            Tuple of (answer, chat_history, token_count)
+        """
+        from camel.societies import run_society
+        answer, chat_history, token_count = run_society(self.owl_society)
+        
+        # Store results
+        self.result = answer
+        self.chat_history = chat_history
+        self.token_count = token_count
+        
+        return answer, chat_history, token_count
+    
+    async def arun_with_updates(self) -> AsyncGenerator[Dict, None]:
+        """
+        Run the agent society asynchronously, yielding updates
+        
+        Yields:
+            Update dictionaries containing agent status and progress
+        """
+        # Custom implementation to stream updates from OWL
+        # This is a simplified version - actual implementation would need
+        # to instrument the OWL framework to emit events during processing
+        
+        # Initial status
+        yield {
+            "type": "agent_status",
+            "status": "started",
+            "agent": "system",
+            "task": "Analyzing your request"
+        }
+        
+        # Task planning phase
+        yield {
+            "type": "agent_status",
+            "status": "working",
+            "agent": "planner",
+            "task": "Breaking down the task into actionable steps"
+        }
+        
+        await asyncio.sleep(1)  # Simulate work
+        
+        # Run actual process in background thread to avoid blocking
+        loop = asyncio.get_event_loop()
+        answer, chat_history, token_count = await loop.run_in_executor(
+            None, self.run
+        )
+        
+        # Store results
+        self.result = answer
+        self.chat_history = chat_history
+        self.token_count = token_count
+        
+        # Final message
+        yield {
+            "type": "message",
+            "message": {
+                "role": "assistant",
+                "content": answer,
+                "timestamp": datetime.now().isoformat()
+            }
+        }
+        
+        # Completion status
+        yield {
+            "type": "agent_status",
+            "status": "completed",
+            "agent": "system",
+            "task": None
+        }
+    
+    def get_result(self) -> Tuple[str, List, int]:
+        """Get the results of the society run"""
+        if self.result is None:
+            raise ValueError("Society has not been run yet")
+        return self.result, self.chat_history, self.token_count
+</pre>
+            </div>
+        </section>
+
+        <section id="backend-llm">
+            <h3>5.4 LLM Integration</h3>
+            <p>We'll create a flexible LLM service that can work with various providers:</p>
+
+            <div class="code-block">
+<pre>
+# app/services/llm.py
+from typing import Dict, Any, Optional, List
+from enum import Enum
+import os
+
+from app.config import settings
+
+class ModelProvider(str, Enum):
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    GEMINI = "gemini"
+    LOCAL = "local"
+    OPENROUTER = "openrouter"
+    CUSTOM = "custom"
+
+def get_llm_model(model_name: str):
+    """
+    Get an LLM model instance based on the model name
+    
+    Args:
+        model_name: Name of the model to use
+        
+    Returns:
+        A configured LLM model instance
+    """
+    # Parse provider from model name (format: provider/model)
+    if "/" in model_name:
+        provider, model = model_name.split("/", 1)
+    else:
+        # Default to OpenAI if not specified
+        provider = ModelProvider.OPENAI
+        model = model_name
+    
+    # Create appropriate model based on provider
+    if provider == ModelProvider.OPENAI:
+        from camel.models import OpenAIModel
+        return OpenAIModel(
+            model_name=model,
+            api_key=os.environ.get("OPENAI_API_KEY", settings.OPENAI_API_KEY)
+        )
+    elif provider == ModelProvider.ANTHROPIC:
+        from camel.models import AnthropicModel
+        return AnthropicModel(
+            model_name=model,
+            api_key=os.environ.get("ANTHROPIC_API_KEY", settings.ANTHROPIC_API_KEY)
+        )
+    elif provider == ModelProvider.GEMINI:
+        from camel.models import GeminiModel
+        return GeminiModel(
+            model_name=model,
+            api_key=os.environ.get("GOOGLE_API_KEY", settings.GOOGLE_API_KEY)
+        )
+    elif provider == ModelProvider.LOCAL:
+        from camel.models import LocalModel
+        return LocalModel(
+            model_name=model,
+            api_base=os.environ.get("LOCAL_LLM_API_BASE", settings.LOCAL_LLM_API_BASE)
+        )
+    elif provider == ModelProvider.OPENROUTER:
+        from camel.models import OpenRouterModel
+        return OpenRouterModel(
+            model_name=model,
+            api_key=os.environ.get("OPENROUTER_API_KEY", settings.OPENROUTER_API_KEY)
+        )
+    elif provider == ModelProvider.CUSTOM:
+        from camel.models import CustomModel
+        return CustomModel(
+            model_name=model,
+            api_base=os.environ.get("CUSTOM_LLM_API_BASE", settings.CUSTOM_LLM_API_BASE),
+            api_key=os.environ.get("CUSTOM_LLM_API_KEY", settings.CUSTOM_LLM_API_KEY)
+        )
+    else:
+        raise ValueError(f"Unsupported model provider: {provider}")
+
+class LLMService:
+    """Service for interacting with LLM models"""
+    
+    def __init__(self):
+        pass
+    
+    async def generate_text(
+        self,
+        prompt: str,
+        model_name: str = None,
+        max_tokens: int = 1000,
+        temperature: float = 0.7,
+        stream: bool = False
+    ):
+        """
+        Generate text with an LLM
+        
+        Args:
+            prompt: The prompt to send to the LLM
+            model_name: Optional model name (defaults to settings)
+            max_tokens: Maximum tokens to generate
+            temperature: Sampling temperature
+            stream: Whether to stream the response
+            
+        Returns:
+            Generated text or async generator for streaming
+        """
+        model_name = model_name or settings.DEFAULT_MODEL
+        model = get_llm_model(model_name)
+        
+        if stream:
+            return self._stream_text(model, prompt, max_tokens, temperature)
+        else:
+            return await self._generate_text(model, prompt, max_tokens, temperature)
+    
+    async def _generate_text(self, model, prompt, max_tokens, temperature):
+        """Internal method for text generation"""
+        from camel.messages import ChatMessage
+        
+        # Create a chat message
+        message = ChatMessage(role="user", content=prompt)
+        
+        # Call the model
+        response = await model.async_chat(
+            messages=[message.to_dict()],
+            max_tokens=max_tokens,
+            temperature=temperature
+        )
+        
+        return response.content
+    
+    async def _stream_text(self, model, prompt, max_tokens, temperature):
+        """Internal method for streaming text generation"""
+        from camel.messages import ChatMessage
+        
+        # Create a chat message
+        message = ChatMessage(role="user", content=prompt)
+        
+        # Stream from the model
+        async for chunk in model.async_stream_chat(
+            messages=[message.to_dict()],
+            max_tokens=max_tokens,
+            temperature=temperature
+        ):
+            yield chunk.content
+</pre>
+            </div>
+        </section>
+    </section>
+
+    <section id="database" class="section">
+        <h2>6. Database Design</h2>
+        <p>Our database design focuses on storing user data, conversations, agent configurations, and tool settings efficiently.</p>
+
+        <section id="database-schema">
+            <h3>6.1 Schema Design</h3>
+            <p>We'll use SQLAlchemy ORM to define our database models:</p>
+
+            <div class="code-block">
+<pre>
+# app/models/base.py
+from sqlalchemy import Column, Integer, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
+
+Base = declarative_base()
+
+class TimestampMixin:
+    """Mixin for adding created_at and updated_at timestamps"""
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+</pre>
+            </div>
+
+            <div class="code-block">
+<pre>
+# app/models/user.py
+from sqlalchemy import Column, Integer, String, Boolean, Text
+from sqlalchemy.orm import relationship
+
+from app.models.base import Base, TimestampMixin
+
+class User(Base, TimestampMixin):
+    """User model"""
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    full_name = Column(String(255))
+    is_active = Column(Boolean, default=True)
+    is_superuser = Column(Boolean, default=False)
+    
+    # API keys (encrypted)
+    openai_api_key = Column(Text)
+    anthropic_api_key = Column(Text)
+    google_api_key = Column(Text)
+    
+    # Relationships
+    conversations = relationship("Conversation", back_populates="user")
+    settings = relationship("UserSettings", back_populates="user", uselist=False)
+</pre>
+            </div>
+
+            <div class="code-block">
+<pre>
+# app/models/conversation.py
+from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy.orm import relationship
+
+from app.models.base import Base, TimestampMixin
+
+class Conversation(Base, TimestampMixin):
+    """Conversation model"""
+    __tablename__ = "conversations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String(255))
+    description = Column(Text)
+    
+    # Relationships
+    user = relationship("User", back_populates="conversations")
+    messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
+
+class Message(Base, TimestampMixin):
+    """Message model"""
+    __tablename__ = "messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
+    role = Column(String(50), nullable=False)  # 'user', 'assistant', 'system'
+    content = Column(Text, nullable=False)
+    
+    # Relationships
+    conversation = relationship("Conversation", back_populates="messages")
+    files = relationship("MessageFile", back_populates="message", cascade="all, delete-orphan")
+
+class MessageFile(Base, TimestampMixin):
+    """File attached to a message"""
+    __tablename__ = "message_files"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    message_id = Column(Integer, ForeignKey("messages.id"), nullable=False)
+    file_path = Column(String(255), nullable=False)
+    file_name = Column(String(255), nullable=False)
+    content_type = Column(String(255))
+    
+    # Relationships
+    message = relationship("Message", back_populates="files")
+</pre>
+            </div>
+
+            <div class="code-block">
+<pre>
+# app/models/user_settings.py
+from sqlalchemy import Column, Integer, String, Boolean, JSON, ForeignKey
+from sqlalchemy.orm import relationship
+
+from app.models.base import Base, TimestampMixin
+
+class UserSettings(Base, TimestampMixin):
+    """User settings model"""
+    __tablename__ = "user_settings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    
+    # LLM settings
+    default_model = Column(String(100))
+    
+    # UI settings
+    theme = Column(String(50), default="light")
+    
+    # Agent settings
+    agent_settings = Column(JSON, default={})
+    
+    # Tool settings
+    enabled_tools = Column(JSON, default=list)
+    
+    # Relationships
+    user = relationship("User", back_populates="settings")
+</pre>
+            </div>
+
+            <div class="code-block">
+<pre>
+# app/models/tool.py
+from sqlalchemy import Column, Integer, String, Boolean, JSON, Text, ForeignKey
+from sqlalchemy.orm import relationship
+
+from app.models.base import Base, TimestampMixin
+
+class Tool(Base, TimestampMixin):
+    """Tool model"""
+    __tablename__ = "tools"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text)
+    category = Column(String(100))
+    icon = Column(String(100))
+    enabled_by_default = Column(Boolean, default=True)
+    
+    # Tool configuration
+    config_schema = Column(JSON)  # JSON schema for configuration
+    
+    # Relationships
+    user_tools = relationship("UserTool", back_populates="tool")
+
+class UserTool(Base, TimestampMixin):
+    """User-specific tool configuration"""
+    __tablename__ = "user_tools"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    tool_id = Column(Integer, ForeignKey("tools.id"), nullable=False)
+    enabled = Column(Boolean, default=True)
+    
+    # User-specific configuration
+    config = Column(JSON)
+    
+    # Relationships
+    tool = relationship("Tool", back_populates="user_tools")
+</pre>
+            </div>
+
+            <h4>Database Connection Setup</h4>
+
+            <div class="code-block">
+<pre>
+# app/database.py
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+from app.config import settings
+
+engine = create_engine(settings.DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    """Database dependency for FastAPI"""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+def create_db_and_tables():
+    """Create database tables"""
+    from app.models.base import Base
+    Base.metadata.create_all(bind=engine)
+</pre>
+            </div>
+        </section>
+
+        <section id="database-vector">
+            <h3>6.2 Vector Database Integration</h3>
+            <p>We'll use ChromaDB for storing and retrieving vector embeddings for semantic search:</p>
+
+            <div class="code-block">
+<pre>
+# app/services/embeddings.py
+import os
+from typing import List, Dict, Any
+import chromadb
+from chromadb.config import Settings
+
+from app.config import settings
+
+class EmbeddingService:
+    """Service for managing vector embeddings"""
+    
+    def __init__(self):
+        # Initialize ChromaDB client
+        persistent_directory = os.path.join(settings.DATA_DIR, "chromadb")
+        self.client = chromadb.Client(Settings(
+            persist_directory=persistent_directory,
+            chroma_db_impl="duckdb+parquet",
+        ))
+    
+    def get_collection(self, name: str, embedding_function=None):
+        """Get or create a collection"""
+        try:
+            return self.client.get_collection(name=name, embedding_function=embedding_function)
+        except:
+            return self.client.create_collection(name=name, embedding_function=embedding_function)
+    
+    async def add_documents(
+        self,
+        collection_name: str,
+        documents: List[str],
+        metadatas: List[Dict[str, Any]] = None,
+        ids: List[str] = None,
+        embedding_function=None
+    ):
+        """
+        Add documents to the vector database
+        
+        Args:
+            collection_name: Name of the collection
+            documents: List of document texts
+            metadatas: Optional metadata for each document
+            ids: Optional IDs for each document
+            embedding_function: Optional custom embedding function
+        """
+        # Get the embedding function
+        if embedding_function is None:
+            embedding_function = self._get_default_embedding_function()
+        
+        # Get or create collection
+        collection = self.get_collection(collection_name, embedding_function)
+        
+        # Generate IDs if not provided
+        if ids is None:
+            import uuid
+            ids = [str(uuid.uuid4()) for _ in documents]
+        
+        # Add documents
+        collection.add(
+            documents=documents,
+            metadatas=metadatas,
+            ids=ids
+        )
+    
+    async def query_documents(
+        self,
+        collection_name: str,
+        query: str,
+        n_results: int = 5,
+        where: Dict[str, Any] = None,
+        embedding_function=None
+    ):
+        """
+        Query documents by similarity
+        
+        Args:
+            collection_name: Name of the collection
+            query: Query text
+            n_results: Number of results to return
+            where: Optional filter
+            embedding_function: Optional custom embedding function
+            
+        Returns:
+            List of matching documents with similarity scores
+        """
+        # Get the embedding function
+        if embedding_function is None:
+            embedding_function = self._get_default_embedding_function()
+        
+        # Get collection
+        try:
+            collection = self.get_collection(collection_name, embedding_function)
+        except:
+            return []
+        
+        # Query
+        results = collection.query(
+            query_texts=[query],
+            n_results=n_results,
+            where=where
+        )
+        
+        return results
+    
+    def _get_default_embedding_function(self):
+        """Get the default embedding function"""
+        from chromadb.utils import embedding_functions
+        
+        # Use OpenAI embeddings if available, otherwise use local ONNX model
+        if settings.OPENAI_API_KEY:
+            return embedding_functions.OpenAIEmbeddingFunction(
+                api_key=settings.OPENAI_API_KEY,
+                model_name="text-embedding-3-small"
+            )
+        else:
+            return embedding_functions.ONNXMiniLM_L6_V2()
+</pre>
+            </div>
+        </section>
+    </section>
+
+    <section id="apis" class="section">
+        <h2>7. API Design</h2>
+        <p>Our API design follows RESTful principles with clear resource-oriented endpoints.</p>
+
+        <section id="apis-core">
+            <h3>7.1 Core API Endpoints</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Endpoint</th>
+                            <th>Method</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>/api/auth/register</code></td>
+                            <td>POST</td>
+                            <td>Register a new user</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/auth/login</code></td>
+                            <td>POST</td>
+                            <td>Log in and obtain JWT token</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/conversations</code></td>
+                            <td>GET</td>
+                            <td>List user conversations</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/conversations</code></td>
+                            <td>POST</td>
+                            <td>Create a new conversation</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/conversations/{id}</code></td>
+                            <td>GET</td>
+                            <td>Get conversation details</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/conversations/{id}/message</code></td>
+                            <td>POST</td>
+                            <td>Send a message to conversation</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/conversations/{id}/stop</code></td>
+                            <td>POST</td>
+                            <td>Stop current agent execution</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/agents</code></td>
+                            <td>GET</td>
+                            <td>List available agents</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/tools</code></td>
+                            <td>GET</td>
+                            <td>List available tools</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/tools/{id}/enable</code></td>
+                            <td>POST</td>
+                            <td>Enable a tool</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/tools/{id}/disable</code></td>
+                            <td>POST</td>
+                            <td>Disable a tool</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/files</code></td>
+                            <td>POST</td>
+                            <td>Upload a file</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/files/{id}</code></td>
+                            <td>GET</td>
+                            <td>Get file metadata</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/settings</code></td>
+                            <td>GET</td>
+                            <td>Get user settings</td>
+                        </tr>
+                        <tr>
+                            <td><code>/api/settings</code></td>
+                            <td>PATCH</td>
+                            <td>Update user settings</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>WebSocket API</h4>
+            <p>In addition to RESTful endpoints, we also provide WebSocket endpoints for real-time updates:</p>
+            <ul>
+                <li><code>/api/conversations/{id}/updates</code> - WebSocket endpoint for receiving real-time updates from agent activities</li>
+            </ul>
+        </section>
+
+        <section id="apis-authentication">
+            <h3>7.2 Authentication</h3>
+            <p>We'll implement JWT-based authentication:</p>
+
+            <div class="code-block">
+<pre>
+# app/security.py
+from datetime import datetime, timedelta
+from typing import Optional
+import jwt
+from passlib.context import CryptContext
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+
+from app.models.user import User
+from app.dependencies import get_db
+from app.config import settings
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify password against hash"""
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    """Hash password"""
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Create JWT access token"""
+    to_encode = data.copy()
+    
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    
+    return encoded_jwt
+
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+    """Get current user from token"""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    
+    try:
+        # Decode JWT
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: int = payload.get("sub")
+        
+        if user_id is None:
+            raise credentials_exception
+    except jwt.PyJWTError:
+        raise credentials_exception
+    
+    # Get user from database
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    if user is None:
+        raise credentials_exception
+    
+    return user
+
+def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+    """Get current active user"""
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    
+    return current_user
+
+async def get_user_from_token(token: str, db: Session) -> User:
+    """Get user from token (async version for WebSockets)"""
+    try:
+        # Decode JWT
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: int = payload.get("sub")
+        
+        if user_id is None:
+            return None
+    except jwt.PyJWTError:
+        return None
+    
+    # Get user from database
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    return user
+</pre>
+            </div>
+
+            <p>Example authentication endpoints:</p>
+
+            <div class="code-block">
+<pre>
+# app/api/auth.py
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
+from datetime import timedelta
+
+from app.dependencies import get_db
+from app.models.user import User
+from app.schemas.user import UserCreate, UserResponse, Token
+from app.security import (
+    get_password_hash,
+    verify_password,
+    create_access_token,
+    get_current_active_user,
+)
+from app.config import settings
+
+router = APIRouter()
+
+@router.post("/register", response_model=UserResponse)
+def register(user: UserCreate, db: Session = Depends(get_db)):
+    """Register a new user"""
+    # Check if user already exists
+    db_user = db.query(User).filter(User.email == user.email).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create new user
+    hashed_password = get_password_hash(user.password)
+    db_user = User(
+        email=user.email,
+        hashed_password=hashed_password,
+        full_name=user.full_name,
+    )
+    
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    return db_user
+
+@router.post("/login", response_model=Token)
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    """Login and get access token"""
+    # Find user
+    user = db.query(User).filter(User.email == form_data.username).first()
+    
+    # Verify credentials
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Check if user is active
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(user.id)},
+        expires_delta=access_token_expires,
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_active_user)):
+    """Get current user"""
+    return current_user
+</pre>
+            </div>
+        </section>
+
+        <section id="apis-external">
+            <h3>7.3 External API Integration</h3>
+            <p>The system integrates with various external APIs to provide tools for agents:</p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>API</th>
+                            <th>Purpose</th>
+                            <th>Integration Approach</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>OpenAI API</td>
+                            <td>LLM capabilities, DALL-E image generation, embeddings</td>
+                            <td>Direct API integration with API key</td>
+                        </tr>
+                        <tr>
+                            <td>Anthropic API</td>
+                            <td>Claude models for LLM capabilities</td>
+                            <td>Direct API integration with API key</td>
+                        </tr>
+                        <tr>
+                            <td>Google API</td>
+                            <td>Gemini models, search, maps, and other Google services</td>
+                            <td>Direct API integration with API key</td>
+                        </tr>
+                        <tr>
+                            <td>Serper API</td>
+                            <td>Web search capabilities</td>
+                            <td>Direct API integration with API key</td>
+                        </tr>
+                        <tr>
+                            <td>Browser (via Playwright)</td>
+                            <td>Web browsing, scraping, and interaction</td>
+                            <td>Local automation via Playwright library</td>
+                        </tr>
+                        <tr>
+                            <td>GitHub API</td>
+                            <td>Repository access and management</td>
+                            <td>OAuth integration or personal access token</td>
+                        </tr>
+                        <tr>
+                            <td>Arxiv API</td>
+                            <td>Academic paper access</td>
+                            <td>Direct API integration (no authentication required)</td>
+                        </tr>
+                        <tr>
+                            <td>Weather API</td>
+                            <td>Weather information</td>
+                            <td>Direct API integration with API key</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p>Example of an external API integration:</p>
+
+            <div class="code-block">
+<pre>
+# app/tools/search.py
+import os
+import json
+import requests
+from typing import List, Dict, Any, Optional
+
+from app.config import settings
+
+class SearchTool:
+    """Tool for performing web searches"""
+    
+    def __init__(self, api_key: Optional[str] = None):
+        self.serper_api_key = api_key or os.environ.get("SERPER_API_KEY", settings.SERPER_API_KEY)
+        self.google_api_key = os.environ.get("GOOGLE_API_KEY", settings.GOOGLE_API_KEY)
+    
+    def search_google(self, query: str, num_results: int = 5) -> List[Dict[str, Any]]:
+        """
+        Perform a Google search using Serper API
+        
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            
+        Returns:
+            List of search results with title, link, and snippet
+        """
+        if not self.serper_api_key:
+            raise ValueError("Serper API key is required for Google search")
+        
+        url = "https://google.serper.dev/search"
+        payload = json.dumps({
+            "q": query,
+            "num": num_results
+        })
+        headers = {
+            'X-API-KEY': self.serper_api_key,
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.request("POST", url, headers=headers, data=payload)
+        response.raise_for_status()
+        
+        search_results = response.json()
+        
+        # Extract and format results
+        results = []
+        if "organic" in search_results:
+            for item in search_results["organic"]:
+                results.append({
+                    "title": item.get("title", ""),
+                    "link": item.get("link", ""),
+                    "snippet": item.get("snippet", "")
+                })
+        
+        return results
+    
+    def search_wiki(self, query: str, num_results: int = 3) -> List[Dict[str, Any]]:
+        """
+        Search Wikipedia
+        
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            
+        Returns:
+            List of Wikipedia articles with title, link, and summary
+        """
+        url = f"https://en.wikipedia.org/w/api.php"
+        params = {
+            "action": "query",
+            "format": "json",
+            "list": "search",
+            "srsearch": query,
+            "srlimit": num_results,
+            "srinfo": "totalhits",
+            "srprop": "snippet",
+        }
+        
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        
+        search_results = response.json()
+        
+        # Extract and format results
+        results = []
+        if "query" in search_results and "search" in search_results["query"]:
+            for item in search_results["query"]["search"]:
+                title = item.get("title", "")
+                page_id = item.get("pageid", "")
+                results.append({
+                    "title": title,
+                    "link": f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}",
+                    "snippet": item.get("snippet", "").replace("<span class=\"searchmatch\">", "").replace("</span>", ""),
+                    "page_id": page_id
+                })
+        
+        return results
+    
+    def get_wiki_content(self, page_id: str) -> str:
+        """
+        Get full content of a Wikipedia page
+        
+        Args:
+            page_id: Wikipedia page ID
+            
+        Returns:
+            Full text content of the Wikipedia page
+        """
+        url = "https://en.wikipedia.org/w/api.php"
+        params = {
+            "action": "query",
+            "format": "json",
+            "prop": "extracts",
+            "pageids": page_id,
+            "explaintext": True,
+            "exsectionformat": "plain"
+        }
+        
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        if "query" in data and "pages" in data["query"] and page_id in data["query"]["pages"]:
+            return data["query"]["pages"][page_id]["extract"]
+        
+        return "Content not found"
+</pre>
+            </div>
+        </section>
+    </section>
+
+    <section id="implementation" class="section">
+        <h2>8. Implementation Steps</h2>
+        <p>Follow these steps to implement your Manus/Genspark clone:</p>
+
+        <div class="bg-highlight mb-6">
+            <h4>General Development Approach</h4>
+            <p>We recommend an incremental development approach, building and testing components one at a time. Start with core functionality and add more advanced features as you progress.</p>
+        </div>
+
+        <ol class="space-y-6">
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 1: Set Up Project Structure</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Create a new project directory structure</li>
+                        <li>Initialize Git repository</li>
+                        <li>Set up Python virtual environment</li>
+                        <li>Create initial package.json for frontend</li>
+                        <li>Create basic README and documentation</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 2: Implement Backend Foundations</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Set up FastAPI application structure</li>
+                        <li>Implement database models and connections</li>
+                        <li>Create basic authentication system</li>
+                        <li>Set up configuration and environment variables</li>
+                        <li>Implement basic API endpoints</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 3: Integrate OWL Framework</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Install and configure OWL dependencies</li>
+                        <li>Create agent architecture based on OWL</li>
+                        <li>Set up tool integration framework</li>
+                        <li>Implement WebSocket for real-time updates</li>
+                        <li>Test basic agent functionality</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 4: Implement Frontend Foundations</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Set up React + Vite + TypeScript project</li>
+                        <li>Configure TailwindCSS</li>
+                        <li>Set up Redux store and basic state management</li>
+                        <li>Create basic layout components</li>
+                        <li>Implement authentication UI</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 5: Develop Core Conversation UI</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Implement chat interface components</li>
+                        <li>Create message display with markdown support</li>
+                        <li>Add file upload capabilities</li>
+                        <li>Implement WebSocket connection for real-time updates</li>
+                        <li>Add basic conversation history</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 6: Implement Tool Integration</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Set up browser automation with Playwright</li>
+                        <li>Integrate code execution capabilities</li>
+                        <li>Add search functionality</li>
+                        <li>Implement document processing</li>
+                        <li>Add data analysis capabilities</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 7: Enhance Agent Capabilities</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Implement task planning and breakdown</li>
+                        <li>Add multi-agent coordination</li>
+                        <li>Improve agent thought process and reasoning</li>
+                        <li>Implement memory and context management</li>
+                        <li>Add tool selection logic</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 8: Develop Settings and Configuration UI</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Create settings page</li>
+                        <li>Implement API key management</li>
+                        <li>Add tool configuration UI</li>
+                        <li>Create agent configuration options</li>
+                        <li>Implement user preferences</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 9: Add Advanced Features</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Implement vector database for semantic search</li>
+                        <li>Add conversation history with search</li>
+                        <li>Implement file management system</li>
+                        <li>Add visualization for agent activities</li>
+                        <li>Implement tool execution monitoring</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 10: Testing and Optimization</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Write unit tests for critical components</li>
+                        <li>Perform integration testing</li>
+                        <li>Optimize performance</li>
+                        <li>Improve error handling</li>
+                        <li>Add logging and monitoring</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 11: Finalize Deployment Configuration</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Create Docker configuration</li>
+                        <li>Set up local development environment</li>
+                        <li>Create deployment documentation</li>
+                        <li>Add environment variable templates</li>
+                        <li>Implement security best practices</li>
+                    </ol>
+                </div>
+            </li>
+
+            <li class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-lg">Step 12: Documentation and Polishing</h4>
+                <div class="pl-6">
+                    <ol class="list-decimal">
+                        <li>Create comprehensive documentation</li>
+                        <li>Add usage examples</li>
+                        <li>Improve UI/UX polish</li>
+                        <li>Address accessibility concerns</li>
+                        <li>Create getting started guide</li>
+                    </ol>
+                </div>
+            </li>
+        </ol>
+    </section>
+
+    <section id="deployment" class="section">
+        <h2>9. Deployment Guide</h2>
+        <p>This section covers how to deploy and run your Manus/Genspark clone locally.</p>
+
+        <h3>Local Development Setup</h3>
+        
+        <div class="code-block">
+<pre>
+# Clone the repository
+git clone https://github.com/yourusername/openagent.git
+cd openagent
+
+# Set up backend
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your API keys and configuration
+
+# Initialize database
+alembic upgrade head
+
+# Install Playwright dependencies
+playwright install
+playwright install-deps
+
+# Start backend server
+uvicorn app.main:app --reload
+
+# In a new terminal, set up frontend
+cd ../frontend
+npm install
+npm run dev
+</pre>
+        </div>
+
+        <h3>Docker Deployment</h3>
+        <p>For containerized deployment, we provide Docker configuration:</p>
+
+        <div class="code-block">
+<pre>
+# Build and start containers
+docker-compose up -d
+
+# Initialize database in container
+docker-compose exec backend alembic upgrade head
+
+# Access the application
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8000
+# API docs: http://localhost:8000/docs
+</pre>
+        </div>
+
+        <h3>Configuration Variables</h3>
+        <p>The system requires several configuration variables to be set:</p>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Description</th>
+                        <th>Required</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>OPENAI_API_KEY</code></td>
+                        <td>OpenAI API key for GPT models</td>
+                        <td>Yes (or another LLM provider)</td>
+                    </tr>
+                    <tr>
+                        <td><code>ANTHROPIC_API_KEY</code></td>
+                        <td>Anthropic API key for Claude models</td>
+                        <td>Optional</td>
+                    </tr>
+                    <tr>
+                        <td><code>GOOGLE_API_KEY</code></td>
+                        <td>Google API key for Gemini models</td>
+                        <td>Optional</td>
+                    </tr>
+                    <tr>
+                        <td><code>SERPER_API_KEY</code></td>
+                        <td>Serper API key for web search</td>
+                        <td>Optional</td>
+                    </tr>
+                    <tr>
+                        <td><code>SECRET_KEY</code></td>
+                        <td>Secret key for JWT tokens</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td><code>DATABASE_URL</code></td>
+                        <td>Database connection string</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td><code>CORS_ORIGINS</code></td>
+                        <td>Allowed CORS origins</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td><code>UPLOAD_DIR</code></td>
+                        <td>Directory for uploaded files</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td><code>DATA_DIR</code></td>
+                        <td>Directory for data storage</td>
+                        <td>Yes</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>System Requirements</h3>
+        <ul>
+            <li>Python 3.10+ for backend</li>
+            <li>Node.js 18+ for frontend</li>
+            <li>PostgreSQL 14+ for database</li>
+            <li>Chrome/Chromium for browser automation</li>
+            <li>4GB RAM minimum (8GB+ recommended)</li>
+            <li>10GB disk space minimum</li>
+        </ul>
+    </section>
+
+    <section id="integrations" class="section">
+        <h2>10. External Integrations</h2>
+        <p>Our system integrates with various external services to provide enhanced capabilities.</p>
+
+        <h3>Core Integrations</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+            <div class="p-4 border rounded-lg">
+                <h4 class="font-semibold">LLM Providers</h4>
+                <ul class="list-disc pl-5 mt-2">
+                    <li>OpenAI API (GPT-4, etc.)</li>
+                    <li>Anthropic API (Claude models)</li>
+                    <li>Google Gemini API</li>
+                    <li>Local LLM via LMStudio</li>
+                    <li>OpenRouter (for multiple providers)</li>
+                </ul>
+            </div>
+            <div class="p-4 border rounded-lg">
+                <h4 class="font-semibold">Web Capabilities</h4>
+                <ul class="list-disc pl-5 mt-2">
+                    <li>Playwright for browser automation</li>
+                    <li>Serper API for search results</li>
+                    <li>Wikipedia API for knowledge access</li>
+                    <li>Google Custom Search</li>
+                </ul>
+            </div>
+            <div class="p-4 border rounded-lg">
+                <h4 class="font-semibold">Data Processing</h4>
+                <ul class="list-disc pl-5 mt-2">
+                    <li>Pandas for data analysis</li>
+                    <li>Matplotlib for visualization</li>
+                    <li>PyTorch for ML tasks</li>
+                    <li>NLTK for text processing</li>
+                </ul>
+            </div>
+            <div class="p-4 border rounded-lg">
+                <h4 class="font-semibold">File Processing</h4>
+                <ul class="list-disc pl-5 mt-2">
+                    <li>PyPDF2 for PDF processing</li>
+                    <li>python-docx for Word documents</li>
+                    <li>openpyxl for Excel files</li>
+                    <li>Pillow for image processing</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Optional Integrations</h3>
+        <p>These integrations can be added based on your specific needs:</p>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Integration</th>
+                        <th>Purpose</th>
+                        <th>Configuration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GitHub API</td>
+                        <td>Access to repositories and code</td>
+                        <td>Requires Personal Access Token</td>
+                    </tr>
+                    <tr>
+                        <td>Notion API</td>
+                        <td>Note-taking and knowledge management</td>
+                        <td>Requires Notion API key and integration</td>
+                    </tr>
+                    <tr>
+                        <td>DALL-E</td>
+                        <td>Image generation capabilities</td>
+                        <td>Included with OpenAI API key</td>
+                    </tr>
+                    <tr>
+                        <td>Google Drive API</td>
+                        <td>Access to files in Google Drive</td>
+                        <td>Requires OAuth configuration</td>
+                    </tr>
+                    <tr>
+                        <td>Semantic Scholar API</td>
+                        <td>Academic research capabilities</td>
+                        <td>Free API with usage limits</td>
+                    </tr>
+                    <tr>
+                        <td>Weather API</td>
+                        <td>Access to weather data</td>
+                        <td>Requires API key (many providers available)</td>
+                    </tr>
+                    <tr>
+                        <td>YouTube API</td>
+                        <td>Video search and metadata</td>
+                        <td>Requires Google API key</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Integration Extensibility</h3>
+        <p>The system is designed to be easily extensible with new integrations:</p>
+
+        <div class="code-block">
+<pre>
+# app/tools/registry.py
+from typing import List, Dict, Any, Optional
+
+# Import tool modules
+from app.tools.browser import BrowserTool
+from app.tools.search import SearchTool
+from app.tools.code_execution import CodeExecutionTool
+# Add your custom tool imports here
+
+def get_tools(user_id: Optional[int] = None) -> List:
+    """
+    Get all available tools, optionally customized for a specific user
+    
+    Args:
+        user_id: Optional user ID for personalized tools
+        
+    Returns:
+        List of tool instances
+    """
+    # Get user-specific settings if user_id is provided
+    user_settings = {}
+    if user_id:
+        from app.services.user import UserService
+        user_service = UserService()
+        user_settings = user_service.get_user_tool_settings(user_id)
+    
+    # Initialize tools
+    tools = []
+    
+    # Browser automation
+    browser_config = user_settings.get("browser", {})
+    browser_tool = BrowserTool(
+        headless=browser_config.get("headless", True)
+    )
+    tools.extend(browser_tool.get_tools())
+    
+    # Search capabilities
+    search_config = user_settings.get("search", {})
+    search_tool = SearchTool(
+        api_key=search_config.get("serper_api_key")
+    )
+    tools.append(search_tool.search_google)
+    tools.append(search_tool.search_wiki)
+    
+    # Code execution
+    code_config = user_settings.get("code", {})
+    code_tool = CodeExecutionTool(
+        sandbox=code_config.get("sandbox", "subprocess")
+    )
+    tools.extend(code_tool.get_tools())
+    
+    # Add more tools as needed
+    # ...
+    
+    return tools
+
+def register_custom_tool(tool_cls, **kwargs):
+    """
+    Register a custom tool class
+    
+    Args:
+        tool_cls: Tool class to register
+        **kwargs: Additional arguments for tool initialization
+    """
+    # Implementation to register custom tools
+    pass
+</pre>
+        </div>
+
+        <p>To add a new tool, create a new tool class and update the registry:</p>
+
+        <div class="code-block">
+<pre>
+# app/tools/custom_tool.py
+from typing import Dict, Any
+
+class CustomTool:
+    """Example custom tool implementation"""
+    
+    def __init__(self, **kwargs):
+        self.config = kwargs
+    
+    def get_tools(self):
+        """Get all tools provided by this tool class"""
+        return [
+            self.custom_function
+        ]
+    
+    def custom_function(self, input_param: str) -> Dict[str, Any]:
+        """
+        Custom tool function
+        
+        Args:
+            input_param: Input parameter
+            
+        Returns:
+            Tool execution result
+        """
+        # Tool implementation
+        result = f"Processed: {input_param}"
+        
+        return {
+            "result": result,
+            "status": "success"
+        }
+
+# Then update registry.py to include your tool
+# from app.tools.custom_tool import CustomTool
+# ...
+# custom_tool = CustomTool()
+# tools.extend(custom_tool.get_tools())
+</pre>
+        </div>
+    </section>
+
+    <section id="testing" class="section">
+        <h2>11. Testing Strategy</h2>
+        <p>A comprehensive testing strategy ensures the reliability and stability of your Manus/Genspark clone.</p>
+
+        <h3>Testing Approach</h3>
+        <ol>
+            <li><strong>Unit Testing</strong>: Test individual components in isolation</li>
+            <li><strong>Integration Testing</strong>: Test interactions between components</li>
+            <li><strong>End-to-End Testing</strong>: Test complete user workflows</li>
+            <li><strong>User Acceptance Testing</strong>: Validate against real-world use cases</li>
+        </ol>
+
+        <h3>Backend Testing</h3>
+        <p>For backend testing, we'll use pytest:</p>
+
+        <div class="code-block">
+<pre>
+# tests/test_api/test_conversations.py
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from app.main import app
+from app.dependencies import get_db
+from app.models.base import Base
+from app.security import create_access_token
+
+# Setup test database
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Override dependency
+def override_get_db():
+    try:
+        db = TestingSessionLocal()
+        yield db
+    finally:
+        db.close()
+
+app.dependency_overrides[get_db] = override_get_db
+
+# Test client
+client = TestClient(app)
+
+@pytest.fixture
+def setup_database():
+    """Setup test database before each test"""
+    Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
+
+@pytest.fixture
+def test_user(setup_database):
+    """Create a test user"""
+    from app.models.user import User
+    from app.security import get_password_hash
+    
+    db = TestingSessionLocal()
+    db_user = User(
+        email="test@example.com",
+        hashed_password=get_password_hash("password123"),
+        full_name="Test User",
+        is_active=True
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    token = create_access_token({"sub": str(db_user.id)})
+    
+    return {
+        "id": db_user.id,
+        "email": db_user.email,
+        "token": token
+    }
+
+@pytest.fixture
+def test_conversation(test_user):
+    """Create a test conversation"""
+    from app.models.conversation import Conversation
+    
+    db = TestingSessionLocal()
+    db_conversation = Conversation(
+        user_id=test_user["id"],
+        title="Test Conversation",
+        description="Test description"
+    )
+    db.add(db_conversation)
+    db.commit()
+    db.refresh(db_conversation)
+    
+    return {
+        "id": db_conversation.id,
+        "title": db_conversation.title
+    }
+
+def test_create_conversation(test_user):
+    """Test creating a conversation"""
+    headers = {"Authorization": f"Bearer {test_user['token']}"}
+    
+    response = client.post(
+        "/api/conversations/",
+        headers=headers,
+        json={"title": "New Conversation", "description": "Test description"}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "New Conversation"
+    assert data["description"] == "Test description"
+
+def test_list_conversations(test_user, test_conversation):
+    """Test listing conversations"""
+    headers = {"Authorization": f"Bearer {test_user['token']}"}
+    
+    response = client.get("/api/conversations/", headers=headers)
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["id"] == test_conversation["id"]
+    assert data[0]["title"] == test_conversation["title"]
+
+def test_send_message(test_user, test_conversation):
+    """Test sending a message"""
+    headers = {"Authorization": f"Bearer {test_user['token']}"}
+    
+    response = client.post(
+        f"/api/conversations/{test_conversation['id']}/message",
+        headers=headers,
+        data={"content": "Test message"}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["content"] == "Test message"
+    assert data["role"] == "user"
+</pre>
+        </div>
+
+        <h3>Frontend Testing</h3>
+        <p>For frontend testing, we'll use Jest and React Testing Library:</p>
+
+        <div class="code-block">
+<pre>
+// src/components/chat/MessageList.test.tsx
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MessageList } from './MessageList';
+
+describe('MessageList', () => {
+  const mockMessages = [
+    {
+      id: '1',
+      role: 'user',
+      content: 'Hello, world!',
+      timestamp: '2023-01-01T00:00:00Z'
+    },
+    {
+      id: '2',
+      role: 'assistant',
+      content: 'Hi there! How can I help you?',
+      timestamp: '2023-01-01T00:00:01Z'
+    }
+  ];
+
+  it('renders messages correctly', () => {
+    render(<MessageList messages={mockMessages} />);
+    
+    expect(screen.getByText('Hello, world!')).toBeInTheDocument();
+    expect(screen.getByText('Hi there! How can I help you?')).toBeInTheDocument();
+  });
+  
+  it('applies different styles to user and assistant messages', () => {
+    render(<MessageList messages={mockMessages} />);
+    
+    const userMessage = screen.getByText('Hello, world!').closest('div');
+    const assistantMessage = screen.getByText('Hi there! How can I help you?').closest('div');
+    
+    expect(userMessage).toHaveClass('user-message');
+    expect(assistantMessage).toHaveClass('assistant-message');
+  });
+  
+  it('renders empty state when no messages', () => {
+    render(<MessageList messages={[]} />);
+    
+    expect(screen.getByText('No messages yet')).toBeInTheDocument();
+  });
+});
+</pre>
+        </div>
+
+        <h3>Agent Testing</h3>
+        <p>Testing AI agents requires special considerations:</p>
+
+        <div class="code-block">
+<pre>
+# tests/test_agents/test_society.py
+import pytest
+from unittest.mock import patch, MagicMock
+
+from app.agents.society import construct_society, AgentSociety
+
+# Mock models
+@pytest.fixture
+def mock_models():
+    return {
+        "assistant": MagicMock(),
+        "executor": MagicMock(),
+        "planner": MagicMock(),
+        "tool": MagicMock(),
+    }
+
+# Mock tools
+@pytest.fixture
+def mock_tools():
+    return [MagicMock(), MagicMock()]
+
+@patch('app.agents.society.get_llm_model')
+@patch('app.agents.society.get_tools')
+def test_construct_society(mock_get_tools, mock_get_llm_model):
+    """Test society construction"""
+    # Setup mocks
+    mock_get_tools.return_value = [MagicMock(), MagicMock()]
+    mock_get_llm_model.return_value = MagicMock()
+    
+    # Call function
+    society = construct_society("Test query")
+    
+    # Assertions
+    assert isinstance(society, AgentSociety)
+    assert society.query == "Test query"
+    assert len(society.tools) == 2
+    
+    # Verify mock calls
+    mock_get_tools.assert_called_once()
+    assert mock_get_llm_model.call_count == 4  # One per model type
+
+@patch('camel.societies.construct_society')
+@patch('camel.societies.run_society')
+def test_society_run(mock_run_society, mock_construct_society, mock_models, mock_tools):
+    """Test running the society"""
+    # Setup mocks
+    mock_owl_society = MagicMock()
+    mock_construct_society.return_value = mock_owl_society
+    mock_run_society.return_value = ("Test answer", ["message1", "message2"], 100)
+    
+    # Create society
+    society = AgentSociety(
+        query="Test query",
+        tools=mock_tools,
+        models=mock_models
+    )
+    
+    # Run
