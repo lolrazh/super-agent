@@ -1,7 +1,12 @@
 ---
+description: 
+globs: 
+alwaysApply: true
+---
+---
 description: Rules for overall project organization and development practices for Super Agent (Manus AI Clone)
 globs: **/*.*
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Project Structure Rules
