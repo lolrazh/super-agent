@@ -1,0 +1,435 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: Rules for overall project organization and development practices for Super Agent (Manus AI Clone)
+globs:
+alwaysApply: false
+---
+
+# Project Structure Rules
+
+## Directory Organization
+
+- Follow consistent project structure patterns for all components
+- Group related files together by feature or functionality
+- Use clear, descriptive directory names
+- Maintain separation of concerns between different parts of the application
+
+### Backend Structure
+
+- Backend Python files should be organized into appropriate subdirectories
+- Use the following directory structure for the FastAPI backend:
+
+```
+app/
+├── api/                   # API endpoints
+│   ├── __init__.py
+│   ├── router.py          # Main API router
+│   ├── auth.py            # Authentication endpoints
+│   ├── conversations.py   # Conversation management
+│   └── ...
+├── models/                # SQLAlchemy models
+│   ├── __init__.py
+│   ├── user.py            # User model
+│   ├── conversation.py    # Conversation model
+│   └── ...
+├── schemas/               # Pydantic schemas
+│   ├── __init__.py
+│   ├── user.py            # User schemas
+│   └── ...
+├── agents/                # Agent implementation
+│   ├── __init__.py
+│   ├── orchestrator.py    # Agent orchestration
+│   └── ...
+├── tools/                 # Tool implementation
+│   ├── __init__.py
+│   ├── browser.py         # Browser automation
+│   └── ...
+├── services/              # Business logic
+│   ├── __init__.py
+│   ├── conversation.py    # Conversation service
+│   └── ...
+└── utils/                 # Utility functions
+    ├── __init__.py
+    └── ...
+```
+
+### Frontend Structure
+
+- Frontend TypeScript files should be organized into appropriate subdirectories
+- Use the following directory structure for the React frontend:
+
+```
+src/
+├── components/            # UI components
+│   ├── chat/              # Chat interface components
+│   ├── agents/            # Agent-related components
+│   ├── tools/             # Tool-related components
+│   └── common/            # Common UI components
+├── pages/                 # Page components
+│   ├── Dashboard.tsx     
+│   ├── Chat.tsx
+│   └── ...
+├── store/                 # Redux store
+│   ├── index.ts           # Store configuration
+│   ├── chatSlice.ts       # Chat state slice
+│   └── ...
+├── hooks/                 # Custom React hooks
+│   ├── useAgentWebSocket.ts
+│   └── ...
+├── services/              # API services
+│   ├── api.ts             # API client setup
+│   └── ...
+├── utils/                 # Utility functions
+│   ├── formatters.ts
+│   └── ...
+└── types/                 # TypeScript type definitions
+    ├── index.ts           # Common types
+    └── ...
+```
+
+## Testing Organization
+
+- Test files should be organized in a way that mirrors the structure of the code
+- Follow consistent naming patterns for test files
+- Group tests logically by feature or functionality
+
+```
+tests/                    # Backend tests
+├── api/                  # API endpoint tests
+│   ├── test_auth.py
+│   └── ...
+├── models/               # Model tests
+│   ├── test_user.py
+│   └── ...
+└── ...
+
+src/
+├── __tests__/            # Frontend tests
+│   ├── components/
+│   │   ├── chat/
+│   │   │   └── MessageList.test.tsx
+│   │   └── ...
+│   └── ...
+```
+
+## Configuration Management
+
+- Environment variables should be properly managed with .env files
+- Different environments should have separate configuration
+- Sensitive values should never be committed to the repository
+
+```
+.env.example              # Example environment variables (for documentation)
+.env.development          # Development environment variables
+.env.test                 # Test environment variables
+.env.production           # Production environment variables (not committed)
+```
+
+## Documentation 
+
+- Project documentation should be maintained in the docs directory
+- Include comprehensive README files for key components
+- Document architecture decisions and design patterns
+- Maintain API documentation
+
+```
+docs/
+├── architecture/         # Architecture documentation
+│   ├── overview.md
+│   └── ...
+├── api/                  # API documentation
+│   ├── endpoints.md
+│   └── ...
+├── components/           # Component documentation
+│   ├── agents.md
+│   └── ...
+└── ...
+```
+
+## Package Dependencies
+
+- Dependencies should be properly declared in package management files
+- Use specific versions to ensure reproducible builds
+- Group dependencies logically
+- Document purpose of non-obvious dependencies
+
+### Backend Dependencies (requirements.txt or pyproject.toml)
+
+```python
+# API Framework
+fastapi>=0.95.0,<0.96.0
+uvicorn>=0.21.0,<0.22.0
+pydantic>=1.10.7,<2.0.0
+
+# Database
+sqlalchemy>=2.0.9,<2.1.0
+alembic>=1.10.3,<1.11.0
+psycopg2-binary>=2.9.6,<2.10.0
+
+# Authentication
+python-jose>=3.3.0,<3.4.0
+passlib>=1.7.4,<1.8.0
+bcrypt>=4.0.1,<4.1.0
+
+# Agent Framework
+camel-ai>=0.1.0,<0.2.0
+
+# Browser Automation
+playwright>=1.32.1,<1.33.0
+
+# Vector Database
+chromadb>=0.3.21,<0.4.0
+
+# Utilities
+python-multipart>=0.0.6,<0.1.0
+tenacity>=8.2.2,<8.3.0
+```
+
+### Frontend Dependencies (package.json)
+
+```json
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.10.0",
+    "@reduxjs/toolkit": "^1.9.3",
+    "react-redux": "^8.0.5",
+    "react-query": "^3.39.3",
+    "tailwindcss": "^3.3.1",
+    "@headlessui/react": "^1.7.13",
+    "react-markdown": "^8.0.7",
+    "react-syntax-highlighter": "^15.5.0",
+    "react-icons": "^4.8.0",
+    "react-hook-form": "^7.43.9",
+    "@nlux/react": "^0.1.0",
+    "assistant-ui": "^0.1.0",
+    "copilotkit": "^0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.4",
+    "vite": "^4.2.1",
+    "@vitejs/plugin-react": "^3.1.0",
+    "@types/react": "^18.0.33",
+    "@types/react-dom": "^18.0.11",
+    "jest": "^29.5.0",
+    "@testing-library/react": "^14.0.0"
+  }
+}
+```
+
+## Database Migrations
+
+- Database migrations should be managed using Alembic
+- Migration scripts should be clear and descriptive
+- Include both upgrade and downgrade paths
+- Document complex migrations
+
+```
+migrations/
+├── versions/
+│   ├── 20230401_initial_tables.py
+│   ├── 20230402_add_user_settings.py
+│   └── ...
+├── env.py
+├── README
+├── script.py.mako
+└── alembic.ini
+```
+
+## Configuration Files
+
+- Application configuration should be centralized in config files
+- Use appropriate configuration patterns for each component
+- Document configuration options
+- Provide reasonable defaults
+
+```python
+# app/config.py
+import os
+from pydantic import BaseSettings
+
+class Settings(BaseSettings):
+    """Application settings"""
+    # Database settings
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/superagent")
+    
+    # Authentication settings
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7")
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # CORS settings
+    CORS_ORIGINS: list = ["http://localhost:3000"]
+    
+    # LLM settings
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    
+    # Storage settings
+    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "uploads")
+    DATA_DIR: str = os.getenv("DATA_DIR", "data")
+    
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+```
+
+## Deployment Configuration
+
+- Docker configuration should be provided for containerized deployment
+- Include compose files for local development
+- Document deployment process and requirements
+- Configure CI/CD pipelines for automated testing and deployment
+
+### Docker Configuration
+
+```dockerfile
+# Dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright dependencies
+RUN playwright install chromium
+RUN playwright install-deps chromium
+
+# Copy application code
+COPY . .
+
+# Expose port
+EXPOSE 8000
+
+# Run application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Docker Compose Configuration
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/superagent
+      - SECRET_KEY=development_key
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=superagent
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  frontend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+```
+
+## Continuous Integration
+
+- CI/CD workflows should be defined for automated testing and deployment
+- Include linting, type checking, and testing
+- Configure deployment for various environments
+- Document CI/CD process
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest
+    - name: Run tests
+      run: |
+        pytest
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        
+  test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - name: Install dependencies
+      run: npm ci
+    - name: Run tests
+      run: npm test
+```

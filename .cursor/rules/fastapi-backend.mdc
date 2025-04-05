@@ -1,0 +1,308 @@
+---
+description: 
+globs: app/**/*.py
+alwaysApply: false
+---
+---
+description: Rules for FastAPI backend components of Super Agent (Manus AI Clone)
+globs: app/**/*.py
+alwaysApply: false
+---
+
+# FastAPI Backend Rules
+
+## API Endpoints Structure
+
+- API endpoints should follow FastAPI's structure with proper request validation and dependency injection
+- Use async functions for all endpoints that may perform I/O operations
+- Include proper parameter typing and validation
+- Always decorate routes with appropriate HTTP method decorators (@router.get, @router.post, etc.)
+
+```python
+@router.post("/conversations/", response_model=ConversationResponse)
+async def create_conversation(
+    conversation: ConversationCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new conversation"""
+    conversation_service = ConversationService(db)
+    db_conversation = conversation_service.create_conversation(
+        user_id=current_user.id,
+        title=conversation.title,
+        description=conversation.description
+    )
+    return db_conversation
+```
+
+## Database Session Management
+
+- Database sessions should be injected via FastAPI dependencies
+- Never create database sessions directly in route handlers
+- Always close database sessions properly
+- Use the dependency injection pattern for all database access
+
+```python
+# In dependencies.py
+def get_db():
+    """Database dependency for FastAPI"""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# In route handler
+@router.get("/items/{item_id}", response_model=ItemResponse)
+async def get_item(
+    item_id: int,
+    db: Session = Depends(get_db)
+):
+    return db.query(Item).filter(Item.id == item_id).first()
+```
+
+## SQLAlchemy Models Structure
+
+- SQLAlchemy models should inherit from Base and TimestampMixin
+- Always define __tablename__ attribute
+- Include appropriate relationships and foreign keys
+- Use appropriate column types and constraints
+
+```python
+class Conversation(Base, TimestampMixin):
+    """Conversation model"""
+    __tablename__ = "conversations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String(255))
+    description = Column(Text)
+    
+    # Relationships
+    user = relationship("User", back_populates="conversations")
+    messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
+```
+
+## Authentication
+
+- Protected endpoints should validate user authentication using dependency injection
+- Use proper JWT token validation
+- Apply role-based access control where necessary
+- Handle authentication errors properly
+
+```python
+@router.get("/settings/", response_model=UserSettingsResponse)
+async def get_user_settings(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user settings"""
+    settings = db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
+    if not settings:
+        raise HTTPException(status_code=404, detail="Settings not found")
+    return settings
+```
+
+## Pydantic Schema Validation
+
+- Request/response schemas should be defined using Pydantic models
+- Include appropriate field validation and type annotations
+- Define clear example values where helpful
+- Use inheritance for shared schema components
+
+```python
+class MessageBase(BaseModel):
+    """Base schema for message data"""
+    content: str
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "content": "Hello, this is a message"
+            }
+        }
+
+class MessageCreate(MessageBase):
+    """Schema for creating a new message"""
+    attachments: Optional[List[UploadFile]] = None
+
+class MessageResponse(MessageBase):
+    """Schema for message response"""
+    id: int
+    conversation_id: int
+    role: str
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+```
+
+## Error Handling
+
+- API errors should be properly handled using FastAPI's HTTPException
+- Include appropriate status codes and error messages
+- Consider adding structured error responses for client interpretation
+- Log detailed error information for debugging
+
+```python
+@router.get("/agents/{agent_id}")
+async def get_agent(
+    agent_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get agent details"""
+    agent = db.query(Agent).filter(Agent.id == agent_id).first()
+    
+    if not agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent with ID {agent_id} not found"
+        )
+        
+    if agent.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to access this agent"
+        )
+        
+    return agent
+```
+
+## WebSocket Implementation
+
+- WebSocket endpoints should be properly implemented for real-time agent communication
+- Handle connection/disconnection gracefully
+- Implement proper client registration
+- Include error handling and recovery
+
+```python
+@router.websocket("/{conversation_id}/updates")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    conversation_id: int,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    """WebSocket endpoint for real-time updates"""
+    # Authenticate user
+    try:
+        user = await get_user_from_token(token, db)
+    except:
+        await websocket.close(code=4001)  # Authentication failed
+        return
+    
+    # Accept connection
+    await websocket.accept()
+    
+    try:
+        # Register client to receive updates
+        orchestrator = AgentOrchestrator()
+        await orchestrator.register_client(conversation_id, websocket)
+        
+        # Keep connection alive, handling client messages if needed
+        while True:
+            data = await websocket.receive_text()
+            # Handle client commands if needed
+    except WebSocketDisconnect:
+        # Remove client on disconnect
+        orchestrator = AgentOrchestrator()
+        orchestrator.remove_client(conversation_id, websocket)
+```
+
+## OWL Agent Framework
+
+- Agent implementation should use OWL (CAMEL-based) framework for multi-agent orchestration
+- Follow OWL patterns for agent construction and execution
+- Integrate with standard agent components
+- Implement proper agent communication
+
+```python
+from camel.agents import ChatAgent
+from camel.societies import RolePlaying
+
+def construct_society(query: str, history: List[str] = None, user_id: int = None) -> "AgentSociety":
+    """
+    Construct an agent society for processing a user query
+    """
+    # Get the LLM models we'll use
+    models = {
+        "assistant": get_llm_model(settings.ASSISTANT_MODEL),
+        "executor": get_llm_model(settings.EXECUTOR_MODEL),
+        "planner": get_llm_model(settings.PLANNER_MODEL),
+    }
+    
+    # Configure tools
+    tools = get_tools(user_id)
+    
+    # Create the agent society
+    society = AgentSociety(
+        query=query,
+        history=history,
+        tools=tools,
+        models=models
+    )
+    
+    return society
+```
+
+## Tool Integration
+
+- Browser automation should use Playwright for optimal compatibility
+- Implement proper tool interfaces and error handling
+- Ensure tools are registered properly
+- Vector embeddings should use ChromaDB for storage and retrieval
+
+```python
+# Browser automation with Playwright
+from playwright.async_api import async_playwright
+
+class BrowserTool:
+    """Tool for browser automation"""
+    
+    async def navigate(self, url: str) -> Dict[str, Any]:
+        """Navigate to a URL and return page content"""
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            
+            try:
+                await page.goto(url)
+                content = await page.content()
+                screenshot = await page.screenshot()
+                
+                return {
+                    "content": content,
+                    "screenshot": base64.b64encode(screenshot).decode("utf-8")
+                }
+            finally:
+                await browser.close()
+
+# Vector database with ChromaDB
+import chromadb
+
+class EmbeddingService:
+    """Service for managing vector embeddings"""
+    
+    def __init__(self):
+        # Initialize ChromaDB client
+        persistent_directory = os.path.join(settings.DATA_DIR, "chromadb")
+        self.client = chromadb.Client(Settings(
+            persist_directory=persistent_directory,
+            chroma_db_impl="duckdb+parquet",
+        ))
+    
+    async def query_documents(
+        self,
+        collection_name: str,
+        query: str,
+        n_results: int = 5
+    ):
+        """Query documents by similarity"""
+        collection = self.get_collection(collection_name)
+        results = collection.query(
+            query_texts=[query],
+            n_results=n_results
+        )
+        return results
+``` 

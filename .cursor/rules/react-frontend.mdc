@@ -1,0 +1,389 @@
+---
+description: 
+globs: src/**/*.tsx,src/**/*.ts
+alwaysApply: false
+---
+ ---
+description: Rules for React/TypeScript frontend components of Super Agent (Manus AI Clone)
+globs: src/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+# React Frontend Rules
+
+## Component Structure
+
+- React components should be exported as named functions with TypeScript type annotations
+- Use functional components with hooks instead of class components
+- Organize component files by feature or functionality
+- Include proper prop typing and validation
+
+```tsx
+// Good component structure
+export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
+  return (
+    <div className="message-list">
+      {messages.length === 0 ? (
+        <p>No messages yet</p>
+      ) : (
+        messages.map(message => (
+          <MessageItem key={message.id} message={message} />
+        ))
+      )}
+    </div>
+  );
+};
+```
+
+## TypeScript Props Interface
+
+- Component props should be defined using TypeScript interfaces with a 'Props' suffix
+- Include proper type annotations for all props
+- Use optional props where appropriate (with ?)
+- Document complex props with JSDoc comments
+
+```tsx
+interface MessageItemProps {
+  /** The message to display */
+  message: Message;
+  /** Whether the message is currently selected */
+  isSelected?: boolean;
+  /** Callback for when the message is clicked */
+  onClick?: (messageId: string) => void;
+}
+
+export const MessageItem: React.FC<MessageItemProps> = ({ 
+  message,
+  isSelected = false,
+  onClick
+}) => {
+  // Component implementation
+};
+```
+
+## State Management
+
+- Global state should be managed using Redux Toolkit patterns
+- Use Redux slices for organizing state logic
+- Implement proper async thunks for API calls
+- Use selectors for accessing state
+
+```tsx
+// Redux slice
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
+export const sendMessage = createAsyncThunk(
+  'chat/sendMessage',
+  async ({ content, attachments }: { content: string, attachments?: File[] }) => {
+    // API call implementation
+    return response.data;
+  }
+);
+
+const chatSlice = createSlice({
+  name: 'chat',
+  initialState,
+  reducers: {
+    addMessage: (state, action) => {
+      state.messages.push(action.payload);
+    },
+    clearChat: (state) => {
+      state.messages = [];
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(sendMessage.pending, (state) => {
+        state.isProcessing = true;
+      })
+      .addCase(sendMessage.fulfilled, (state, action) => {
+        state.isProcessing = false;
+      });
+  },
+});
+```
+
+## API Data Fetching
+
+- API data fetching should use React Query for caching and state management
+- Implement proper query keys and options
+- Handle loading, error, and success states
+- Use query invalidation for data refetching
+
+```tsx
+import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { api } from '../services/api';
+
+// Fetch conversations
+export const useConversations = () => {
+  return useQuery('conversations', async () => {
+    const response = await api.get('/conversations');
+    return response.data;
+  });
+};
+
+// Create a new conversation
+export const useCreateConversation = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    async (data: { title: string; description?: string }) => {
+      const response = await api.post('/conversations', data);
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        // Invalidate and refetch conversations query
+        queryClient.invalidateQueries('conversations');
+      },
+    }
+  );
+};
+```
+
+## UI Styling
+
+- UI styling should use TailwindCSS class names for consistent design
+- Follow utility-first approach for styling components
+- Use consistent naming patterns for custom classes
+- Leverage responsive design utilities
+
+```tsx
+// Using TailwindCSS for styling
+export const Button: React.FC<ButtonProps> = ({ 
+  children, 
+  variant = 'primary',
+  size = 'medium',
+  disabled = false,
+  onClick 
+}) => {
+  // Base classes
+  const baseClasses = 'rounded font-medium focus:outline-none';
+  
+  // Variant classes
+  const variantClasses = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700',
+    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
+    danger: 'bg-red-600 text-white hover:bg-red-700'
+  };
+  
+  // Size classes
+  const sizeClasses = {
+    small: 'py-1 px-2 text-sm',
+    medium: 'py-2 px-4 text-base',
+    large: 'py-3 px-6 text-lg'
+  };
+  
+  return (
+    <button
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+};
+```
+
+## Accessible UI Components
+
+- Accessible UI components should leverage HeadlessUI library
+- Ensure proper keyboard navigation
+- Include appropriate ARIA attributes
+- Test with screen readers
+
+```tsx
+import { Dialog, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
+
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+  return (
+    <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-10" onClose={onClose}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-25" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                  {title}
+                </Dialog.Title>
+                <div className="mt-4">
+                  {children}
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
+  );
+};
+```
+
+## Real-time Communication
+
+- WebSocket connections should be properly established for real-time agent updates
+- Handle connection/disconnection gracefully
+- Implement proper message handling
+- Include reconnection logic
+
+```tsx
+import { useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { addMessage, updateAgentStatus } from '../store/chatSlice';
+
+export const useAgentWebSocket = (conversationId: string) => {
+  const dispatch = useDispatch();
+  const socketRef = useRef<WebSocket | null>(null);
+  
+  useEffect(() => {
+    const wsUrl = `${process.env.REACT_APP_WS_URL}/conversations/${conversationId}/updates`;
+    const socket = new WebSocket(wsUrl);
+    socketRef.current = socket;
+    
+    socket.onopen = () => {
+      console.log('WebSocket connection established');
+    };
+    
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      
+      switch (data.type) {
+        case 'message':
+          dispatch(addMessage(data.message));
+          break;
+        case 'agent_status':
+          dispatch(updateAgentStatus(data.task));
+          break;
+        default:
+          console.log('Unknown message type:', data.type);
+      }
+    };
+    
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+    
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+    
+    return () => {
+      socket.close();
+    };
+  }, [conversationId, dispatch]);
+  
+  return socketRef;
+};
+```
+
+## Content Rendering
+
+- Agent responses should properly render markdown content using react-markdown
+- Code blocks in agent responses should use syntax highlighting
+- Handle various content types appropriately
+- Ensure accessible content rendering
+
+```tsx
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+export const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
+  return (
+    <div className="message-content">
+      <ReactMarkdown
+        components={{
+          code({ node, inline, className, children, ...props }) {
+            const match = /language-(\w+)/.exec(className || '');
+            return !inline && match ? (
+              <SyntaxHighlighter
+                style={vscDarkPlus}
+                language={match[1]}
+                PreTag="div"
+                {...props}
+              >
+                {String(children).replace(/\n$/, '')}
+              </SyntaxHighlighter>
+            ) : (
+              <code className={className} {...props}>
+                {children}
+              </code>
+            );
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+};
+```
+
+## UI Components & Icons
+
+- Icons should be imported from react-icons library
+- Chat UI should leverage specialized AI conversation components
+- Form validation should use React Hook Form for optimal performance
+- Use consistent component composition patterns
+
+```tsx
+import { FiSend, FiPaperclip, FiMic, FiStopCircle } from 'react-icons/fi';
+import { useForm } from 'react-hook-form';
+import { useChatCompletion } from '@nlux/react';
+
+export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isProcessing }) => {
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<{ message: string }>();
+  
+  const onSubmit = (data: { message: string }) => {
+    onSendMessage(data.message);
+    reset();
+  };
+  
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="flex items-center p-4 border-t">
+      <button type="button" className="p-2 text-gray-500">
+        <FiPaperclip />
+      </button>
+      
+      <input
+        {...register('message', { required: true })}
+        className="flex-1 px-4 py-2 bg-gray-100 rounded-full focus:outline-none"
+        placeholder="Type a message..."
+        disabled={isProcessing}
+      />
+      
+      {isProcessing ? (
+        <button type="button" className="p-2 ml-2 text-red-500">
+          <FiStopCircle />
+        </button>
+      ) : (
+        <button type="submit" className="p-2 ml-2 text-blue-500">
+          <FiSend />
+        </button>
+      )}
+    </form>
+  );
+};
+```

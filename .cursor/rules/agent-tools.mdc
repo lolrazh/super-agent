@@ -1,0 +1,697 @@
+---
+description: 
+globs: app/agents/**/*.py,app/tools/**/*.py
+alwaysApply: false
+---
+---
+description: Rules for agent implementation and tool integration in Super Agent (Manus AI Clone)
+globs: app/agents/**/*.py, app/tools/**/*.py
+alwaysApply: false
+---
+
+# Agent and Tools Rules
+
+## Agent Framework
+
+- Agent implementation should properly utilize OWL framework components
+- Follow the CAMEL-based agent architecture
+- Implement proper thought process and reasoning
+- Structure agents to work together in a coordinated fashion
+
+```python
+# Importing OWL framework components
+from camel.agents import ChatAgent
+from camel.societies import RolePlaying
+
+# Creating agent society
+def construct_society(query: str, history: List[str] = None, user_id: int = None) -> "AgentSociety":
+    """
+    Construct an agent society for processing a user query
+    """
+    # Get the LLM models we'll use
+    models = {
+        "assistant": get_llm_model(settings.ASSISTANT_MODEL),
+        "executor": get_llm_model(settings.EXECUTOR_MODEL),
+        "planner": get_llm_model(settings.PLANNER_MODEL),
+    }
+    
+    # Configure tools
+    tools = get_tools(user_id)
+    
+    # Create the agent society
+    society = AgentSociety(
+        query=query,
+        history=history,
+        tools=tools,
+        models=models
+    )
+    
+    return society
+```
+
+## Agent Society Structure
+
+- Agent society should follow the proper initialization structure
+- Include query, history, tools, and models parameters
+- Implement proper agent communication
+- Structure the society for optimal task decomposition
+
+```python
+class AgentSociety:
+    """A society of agents that work together to solve a task"""
+    
+    def __init__(
+        self, 
+        query: str, 
+        history: List[str] = None, 
+        tools: List = None,
+        models: Dict = None
+    ):
+        self.query = query
+        self.history = history or []
+        self.tools = tools or []
+        self.models = models or {}
+        self.result = None
+        self.chat_history = []
+        self.token_count = 0
+        
+        # Initialize OWL components
+        self._init_owl_society()
+    
+    def _init_owl_society(self):
+        """Initialize OWL society components"""
+        # Configure assistant agent
+        assistant_agent_kwargs = {
+            "model": self.models.get("assistant"),
+            "tools": self.tools
+        }
+        
+        # Initialize OWL society
+        from camel.societies import construct_society
+        self.owl_society = construct_society(self.query)
+    
+    async def arun_with_updates(self) -> AsyncGenerator[Dict, None]:
+        """
+        Run the agent society asynchronously, yielding updates
+        
+        Yields:
+            Update dictionaries containing agent status and progress
+        """
+        # Yield agent updates during execution
+        yield {
+            "type": "agent_status",
+            "status": "started",
+            "agent": "system",
+            "task": "Analyzing your request"
+        }
+        
+        # Task planning phase
+        yield {
+            "type": "agent_status",
+            "status": "working",
+            "agent": "planner",
+            "task": "Breaking down the task into actionable steps"
+        }
+        
+        # Run actual process and get results
+        # ...
+        
+        # Final message
+        yield {
+            "type": "message",
+            "message": {
+                "role": "assistant",
+                "content": self.result,
+                "timestamp": datetime.now().isoformat()
+            }
+        }
+```
+
+## Tool Registry Pattern
+
+- Tools should be registered through the tool registry system
+- Implement a central registry for tools
+- Allow for user-specific tool configuration
+- Enable dynamic tool discovery
+
+```python
+# app/tools/registry.py
+from typing import List, Dict, Any, Optional
+
+# Import tool modules
+from app.tools.browser import BrowserTool
+from app.tools.search import SearchTool
+from app.tools.code_execution import CodeExecutionTool
+# Add your custom tool imports here
+
+def get_tools(user_id: Optional[int] = None) -> List:
+    """
+    Get all available tools, optionally customized for a specific user
+    
+    Args:
+        user_id: Optional user ID for personalized tools
+        
+    Returns:
+        List of tool instances
+    """
+    # Get user-specific settings if user_id is provided
+    user_settings = {}
+    if user_id:
+        from app.services.user import UserService
+        user_service = UserService()
+        user_settings = user_service.get_user_tool_settings(user_id)
+    
+    # Initialize tools
+    tools = []
+    
+    # Browser automation
+    browser_config = user_settings.get("browser", {})
+    browser_tool = BrowserTool(
+        headless=browser_config.get("headless", True)
+    )
+    tools.extend(browser_tool.get_tools())
+    
+    # Search capabilities
+    search_config = user_settings.get("search", {})
+    search_tool = SearchTool(
+        api_key=search_config.get("serper_api_key")
+    )
+    tools.append(search_tool.search_google)
+    tools.append(search_tool.search_wiki)
+    
+    # Code execution
+    code_config = user_settings.get("code", {})
+    code_tool = CodeExecutionTool(
+        sandbox=code_config.get("sandbox", "subprocess")
+    )
+    tools.extend(code_tool.get_tools())
+    
+    return tools
+```
+
+## Async Tool Execution
+
+- Tool execution should be implemented asynchronously
+- Use proper async/await patterns
+- Handle concurrent tool execution properly
+- Implement proper error handling for async operations
+
+```python
+class BrowserTool:
+    """Tool for browser automation"""
+    
+    async def navigate(self, url: str) -> Dict[str, Any]:
+        """
+        Navigate to a URL and return the page content
+        
+        Args:
+            url: The URL to navigate to
+            
+        Returns:
+            Dictionary containing page content and screenshot
+        """
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            
+            try:
+                await page.goto(url)
+                content = await page.content()
+                screenshot = await page.screenshot()
+                
+                return {
+                    "content": content,
+                    "screenshot": base64.b64encode(screenshot).decode("utf-8")
+                }
+            finally:
+                await browser.close()
+```
+
+## Browser Tool Implementation
+
+- Browser automation tool should implement core navigation capabilities
+- Use Playwright for optimal compatibility
+- Implement proper methods like navigate, get_content, screenshot
+- Handle browser sessions properly
+
+```python
+from playwright.async_api import async_playwright
+import base64
+from typing import Dict, Any, List, Optional
+
+class BrowserTool:
+    """Tool for browser automation"""
+    
+    def __init__(self, headless: bool = True):
+        self.headless = headless
+        
+    def get_tools(self) -> List:
+        """Return all browser tools"""
+        return [
+            self.navigate,
+            self.screenshot,
+            self.extract_text,
+            self.click_element,
+            self.fill_form
+        ]
+    
+    async def navigate(self, url: str) -> Dict[str, Any]:
+        """Navigate to a URL and return page content"""
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=self.headless)
+            page = await browser.new_page()
+            
+            try:
+                await page.goto(url)
+                content = await page.content()
+                title = await page.title()
+                
+                return {
+                    "url": url,
+                    "title": title,
+                    "content": content
+                }
+            finally:
+                await browser.close()
+    
+    async def screenshot(self, url: str, selector: Optional[str] = None) -> Dict[str, Any]:
+        """Take a screenshot of a page or element"""
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=self.headless)
+            page = await browser.new_page()
+            
+            try:
+                await page.goto(url)
+                
+                if selector:
+                    element = await page.query_selector(selector)
+                    if not element:
+                        return {"error": f"Element '{selector}' not found"}
+                    screenshot = await element.screenshot()
+                else:
+                    screenshot = await page.screenshot(full_page=True)
+                
+                return {
+                    "url": url,
+                    "screenshot_base64": base64.b64encode(screenshot).decode("utf-8")
+                }
+            finally:
+                await browser.close()
+```
+
+## Code Execution Sandboxing
+
+- Code execution tools should implement proper sandboxing for security
+- Use isolated environments for code execution
+- Implement proper resource limitations
+- Handle potential security risks
+
+```python
+import subprocess
+import tempfile
+import os
+from typing import Dict, Any
+
+class CodeExecutionTool:
+    """Tool for executing code in a sandboxed environment"""
+    
+    def __init__(self, sandbox: str = "subprocess"):
+        self.sandbox = sandbox  # Options: "subprocess", "docker", "vm"
+        self.timeout = 10  # Maximum execution time in seconds
+        
+    def get_tools(self):
+        """Return all code execution tools"""
+        return [
+            self.execute_python,
+            self.execute_javascript,
+            self.execute_shell
+        ]
+    
+    async def execute_python(self, code: str) -> Dict[str, Any]:
+        """
+        Execute Python code in a sandboxed environment
+        
+        Args:
+            code: Python code to execute
+            
+        Returns:
+            Dictionary with execution results
+        """
+        if self.sandbox == "subprocess":
+            return await self._execute_python_subprocess(code)
+        elif self.sandbox == "docker":
+            return await self._execute_python_docker(code)
+        else:
+            return {"error": f"Unsupported sandbox type: {self.sandbox}"}
+    
+    async def _execute_python_subprocess(self, code: str) -> Dict[str, Any]:
+        """Execute Python code using subprocess"""
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp:
+            temp_filename = temp.name
+            temp.write(code.encode())
+            temp.flush()
+        
+        try:
+            # Execute with resource limitations
+            result = subprocess.run(
+                ["python", temp_filename],
+                capture_output=True,
+                text=True,
+                timeout=self.timeout
+            )
+            
+            return {
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "returncode": result.returncode
+            }
+        except subprocess.TimeoutExpired:
+            return {"error": "Execution timed out"}
+        finally:
+            os.unlink(temp_filename)
+```
+
+## Tool Result Schema
+
+- Tool functions should return results in a consistent dictionary format
+- Include proper error handling in the result
+- Document the result schema
+- Ensure type safety with appropriate typing
+
+```python
+from typing import Dict, Any, TypedDict, Optional, Union
+
+class SearchResult(TypedDict):
+    """Schema for search results"""
+    title: str
+    link: str
+    snippet: str
+
+class SearchToolResult(TypedDict):
+    """Schema for search tool results"""
+    query: str
+    results: List[SearchResult]
+    error: Optional[str]
+
+class SearchTool:
+    """Tool for web search capabilities"""
+    
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = api_key
+        
+    async def search_google(self, query: str, num_results: int = 5) -> Dict[str, Any]:
+        """
+        Perform a Google search
+        
+        Args:
+            query: The search query
+            num_results: Number of results to return
+            
+        Returns:
+            Dictionary with search results
+        """
+        try:
+            # Implementation details...
+            
+            return {
+                "query": query,
+                "results": [
+                    {
+                        "title": "Result 1",
+                        "link": "https://example.com/1",
+                        "snippet": "Description of result 1"
+                    },
+                    # More results...
+                ]
+            }
+        except Exception as e:
+            return {
+                "query": query,
+                "results": [],
+                "error": str(e)
+            }
+```
+
+## Error Handling in Tools
+
+- Tools should implement proper error handling and recovery
+- Use try/except blocks for robust error handling
+- Provide clear error messages
+- Log errors for debugging
+
+```python
+class DocumentTool:
+    """Tool for document processing"""
+    
+    async def extract_text(self, file_path: str) -> Dict[str, Any]:
+        """
+        Extract text from a document
+        
+        Args:
+            file_path: Path to the document file
+            
+        Returns:
+            Dictionary with extracted text or error message
+        """
+        try:
+            if not os.path.exists(file_path):
+                return {
+                    "error": f"File not found: {file_path}"
+                }
+            
+            # Determine file type
+            file_ext = os.path.splitext(file_path)[1].lower()
+            
+            # Extract text based on file type
+            if file_ext == ".pdf":
+                text = await self._extract_from_pdf(file_path)
+            elif file_ext in [".docx", ".doc"]:
+                text = await self._extract_from_word(file_path)
+            elif file_ext in [".txt", ".md"]:
+                text = await self._extract_from_text(file_path)
+            else:
+                return {
+                    "error": f"Unsupported file type: {file_ext}"
+                }
+            
+            return {
+                "file_path": file_path,
+                "text": text
+            }
+            
+        except Exception as e:
+            logger.error(f"Error extracting text from {file_path}: {str(e)}")
+            return {
+                "file_path": file_path,
+                "error": f"Failed to extract text: {str(e)}"
+            }
+```
+
+## Tool Documentation
+
+- Tools should be properly documented with detailed docstrings
+- Include parameter descriptions
+- Document return values
+- Provide usage examples
+
+```python
+class DataAnalysisTool:
+    """
+    Tool for data analysis and visualization
+    
+    This tool provides capabilities for analyzing and visualizing data
+    from various sources including CSV files, databases, and APIs.
+    """
+    
+    async def analyze_csv(self, file_path: str, columns: Optional[List[str]] = None) -> Dict[str, Any]:
+        """
+        Analyze data from a CSV file
+        
+        This function loads a CSV file, performs basic statistical analysis,
+        and returns the results as a dictionary.
+        
+        Args:
+            file_path: Path to the CSV file
+            columns: Optional list of columns to analyze. If not provided, all columns are analyzed.
+            
+        Returns:
+            Dictionary containing the analysis results:
+            {
+                "rows": Number of rows,
+                "columns": List of column names,
+                "summary": Dictionary of statistical summaries per column,
+                "correlations": Correlation matrix (if applicable),
+                "error": Error message (if any)
+            }
+            
+        Example:
+            >>> result = await analyze_csv("data.csv", ["age", "income"])
+            >>> print(f"Number of rows: {result['rows']}")
+            >>> print(f"Average age: {result['summary']['age']['mean']}")
+        """
+        try:
+            import pandas as pd
+            
+            # Load CSV file
+            df = pd.read_csv(file_path)
+            
+            # Filter columns if specified
+            if columns:
+                df = df[columns]
+            
+            # Perform analysis
+            summary = {}
+            for col in df.columns:
+                if pd.api.types.is_numeric_dtype(df[col]):
+                    summary[col] = {
+                        "mean": df[col].mean(),
+                        "median": df[col].median(),
+                        "std": df[col].std(),
+                        "min": df[col].min(),
+                        "max": df[col].max()
+                    }
+                else:
+                    summary[col] = {
+                        "unique_values": df[col].nunique(),
+                        "most_common": df[col].value_counts().head(3).to_dict()
+                    }
+            
+            # Calculate correlations for numeric columns
+            numeric_cols = df.select_dtypes(include=['number']).columns
+            correlations = df[numeric_cols].corr().to_dict() if len(numeric_cols) > 1 else None
+            
+            return {
+                "rows": len(df),
+                "columns": list(df.columns),
+                "summary": summary,
+                "correlations": correlations
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing CSV {file_path}: {str(e)}")
+            return {
+                "error": str(e)
+            }
+```
+
+## LLM Integration
+
+- Agents should use the centralized LLM service for model access
+- Configure LLM providers properly
+- Handle API key management securely
+- Implement fallback mechanisms
+
+```python
+# app/services/llm.py
+from typing import Dict, Any, Optional, List
+from enum import Enum
+import os
+
+from app.config import settings
+
+class ModelProvider(str, Enum):
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    GEMINI = "gemini"
+    LOCAL = "local"
+    OPENROUTER = "openrouter"
+
+def get_llm_model(model_name: str):
+    """
+    Get an LLM model instance based on the model name
+    
+    Args:
+        model_name: Name of the model to use (format: provider/model)
+        
+    Returns:
+        A configured LLM model instance
+    """
+    # Parse provider from model name
+    if "/" in model_name:
+        provider, model = model_name.split("/", 1)
+    else:
+        # Default to OpenAI if not specified
+        provider = ModelProvider.OPENAI
+        model = model_name
+    
+    # Create appropriate model based on provider
+    if provider == ModelProvider.OPENAI:
+        from camel.models import OpenAIModel
+        return OpenAIModel(
+            model_name=model,
+            api_key=os.environ.get("OPENAI_API_KEY", settings.OPENAI_API_KEY)
+        )
+    elif provider == ModelProvider.ANTHROPIC:
+        from camel.models import AnthropicModel
+        return AnthropicModel(
+            model_name=model,
+            api_key=os.environ.get("ANTHROPIC_API_KEY", settings.ANTHROPIC_API_KEY)
+        )
+    # Other providers...
+```
+
+## WebSocket Communication
+
+- Agent activities should be properly broadcast via WebSockets
+- Implement proper message formats
+- Handle connection state properly
+- Ensure real-time updates are delivered reliably
+
+```python
+# app/agents/orchestrator.py
+import asyncio
+from typing import Dict, List, Optional
+from fastapi import WebSocket
+
+class AgentOrchestrator:
+    """Orchestrates agent activities and broadcasts updates to clients"""
+    
+    _instance = None
+    _active_tasks: Dict[int, asyncio.Task] = {}
+    _clients: Dict[int, List[WebSocket]] = {}
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(AgentOrchestrator, cls).__new__(cls)
+            cls._instance._initialize()
+        return cls._instance
+    
+    def _initialize(self):
+        """Initialize the orchestrator"""
+        self._active_tasks = {}
+        self._clients = {}
+    
+    async def register_client(self, conversation_id: int, websocket: WebSocket):
+        """Register a client to receive updates for a conversation"""
+        if conversation_id not in self._clients:
+            self._clients[conversation_id] = []
+        self._clients[conversation_id].append(websocket)
+    
+    def remove_client(self, conversation_id: int, websocket: WebSocket):
+        """Remove a client from updates"""
+        if conversation_id in self._clients and websocket in self._clients[conversation_id]:
+            self._clients[conversation_id].remove(websocket)
+            if not self._clients[conversation_id]:
+                del self._clients[conversation_id]
+    
+    async def _broadcast_update(self, conversation_id: int, update: dict):
+        """Broadcast an update to all clients for a conversation"""
+        if conversation_id in self._clients:
+            for websocket in self._clients[conversation_id]:
+                try:
+                    await websocket.send_json(update)
+                except:
+                    # Client disconnected
+                    await self.remove_client(conversation_id, websocket)
+    
+    async def _broadcast_status(self, conversation_id: int, status: dict):
+        """Broadcast a status update to all clients for a conversation"""
+        await self._broadcast_update(conversation_id, status)
+    
+    async def _broadcast_error(self, conversation_id: int, error: str):
+        """Broadcast an error to all clients for a conversation"""
+        await self._broadcast_update(conversation_id, {
+            "type": "error",
+            "message": error
+        })
+```
