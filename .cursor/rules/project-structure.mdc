@@ -1,11 +1,6 @@
 ---
-description: 
-globs: 
-alwaysApply: false
----
----
 description: Rules for overall project organization and development practices for Super Agent (Manus AI Clone)
-globs:
+globs: **/*.*
 alwaysApply: false
 ---
 
@@ -432,4 +427,4 @@ jobs:
       run: npm ci
     - name: Run tests
       run: npm test
-```
+``` 

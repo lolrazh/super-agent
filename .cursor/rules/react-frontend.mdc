@@ -3,7 +3,7 @@ description:
 globs: src/**/*.tsx,src/**/*.ts
 alwaysApply: false
 ---
- ---
+---
 description: Rules for React/TypeScript frontend components of Super Agent (Manus AI Clone)
 globs: src/**/*.{tsx,ts}
 alwaysApply: false
